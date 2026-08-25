@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-base: #050912;
+  --color-brand-surface: #07111D;
+  --color-brand-surface-light: #0d1a2d;
+  --color-brand-card: #0a1424;
+  --color-brand-ivory: #F5F7FA;
+  --color-brand-muted: #A8B3C2;
+  --color-brand-subtle: #4b5a6d;
+  --color-brand-blue: #0284c7;
+  --color-brand-cyan: #38bdf8;
+  --color-brand-amber: #f59e0b;
+  --font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Base resets and scrollbars */
+html,
+body {
+  background-color: #050912;
+  color: #F5F7FA;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.025em;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050912;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a273a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0284c7;
+}
+
+/* Subtle editorial blur */
+.editorial-glass {
+  background: rgba(7, 17, 29, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.editorial-card {
+  background: #07111D;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
