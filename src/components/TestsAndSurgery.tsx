@@ -222,12 +222,8 @@ export const TestsAndSurgery: React.FC = () => {
     <section
       ref={sectionRef}
       id="tests"
-      className="bg-[#07111D] py-24 md:py-32 text-brand-ivory font-sans border-b border-white/[0.06] relative overflow-hidden"
+      className="bg-[#FFFFFF] py-24 md:py-32 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative overflow-hidden"
     >
-      {/* Subtle ambient lighting */}
-      <div className="absolute top-1/4 -left-48 w-96 h-96 rounded-full bg-cyan-500/5 blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-48 w-96 h-96 rounded-full bg-blue-600/5 blur-[140px] pointer-events-none" />
-
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         {/* Section Header */}
         <div className="max-w-3xl mb-14 md:mb-16">
@@ -236,7 +232,7 @@ export const TestsAndSurgery: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.6 }}
-            className="text-[12px] font-heading font-medium tracking-[0.25em] uppercase text-cyan-400 mb-3.5 block"
+            className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-3.5 block"
           >
             Clinical Infrastructure
           </motion.span>
@@ -245,16 +241,16 @@ export const TestsAndSurgery: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-white tracking-[-0.03em] leading-[1.14] mb-5"
+            className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.14] mb-5"
           >
-            Diagnostic & Surgical Facilities
+            Diagnostic &amp; Surgical Facilities
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-brand-muted text-base sm:text-lg font-normal leading-relaxed"
+            className="text-[#5A687A] text-base sm:text-lg font-normal leading-relaxed"
           >
             Explore our specialized clinical divisions. Select a facility category below to view detailed equipment, diagnostic procedures, and surgical care capabilities.
           </motion.p>
@@ -297,53 +293,52 @@ export const TestsAndSurgery: React.FC = () => {
                           handleOpenCategory(index)
                         }
                       }}
-                      className="group relative rounded-3xl bg-[#050912] border border-white/[0.08] hover:border-cyan-500/40 p-7 sm:p-9 flex flex-col justify-between transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-950/20 cursor-pointer overflow-hidden text-left"
+                      className="group relative rounded-3xl bg-[#FAF8F5] border border-[#E8E2D8] hover:border-[#BE185D]/50 p-7 sm:p-9 flex flex-col justify-between transition-all duration-500 hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)] cursor-pointer overflow-hidden text-left"
                     >
-                      {/* Subtle background glow & gradient on hover */}
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/[0.03] group-hover:bg-cyan-500/[0.08] rounded-full blur-3xl transition-all duration-500 pointer-events-none" />
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/0 group-hover:via-cyan-400/60 to-transparent transition-all duration-500" />
+                      {/* Subtle hover accent */}
+                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BE185D]/0 group-hover:via-[#BE185D]/60 to-transparent transition-all duration-500" />
 
                       <div>
                         {/* Top Meta Bar */}
                         <div className="flex items-center justify-between gap-4 mb-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-400 group-hover:text-slate-950 transition-all duration-400 shadow-md">
+                            <div className="w-12 h-12 rounded-2xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D] group-hover:bg-[#BE185D] group-hover:text-white transition-all duration-400 shadow-sm">
                               <Icon size={22} />
                             </div>
-                            <span className="font-heading font-extrabold text-2xl text-white/20 group-hover:text-cyan-400/50 transition-colors duration-300">
+                            <span className="font-heading font-extrabold text-2xl text-stone-300 group-hover:text-[#BE185D]/40 transition-colors duration-300">
                               {cat.number}
                             </span>
                           </div>
 
                           {cat.palasaOnly ? (
-                            <span className="text-[11px] font-heading font-semibold tracking-wider text-cyan-300 uppercase bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/30">
+                            <span className="text-[11px] font-heading font-semibold tracking-wider text-[#BE185D] uppercase bg-[#FDF2F4] px-3 py-1 rounded-full border border-[#FCE7F3]">
                               Palasa Main OT
                             </span>
                           ) : (
-                            <span className="text-[11px] font-heading font-medium tracking-wider text-brand-muted uppercase bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.08]">
+                            <span className="text-[11px] font-heading font-medium tracking-wider text-[#5A687A] uppercase bg-white px-3 py-1 rounded-full border border-[#E8E2D8]">
                               {cat.scopeBadge}
                             </span>
                           )}
                         </div>
 
                         {/* Title & Tag */}
-                        <span className="text-xs font-heading font-semibold uppercase tracking-widest text-cyan-400/80 mb-2 block">
+                        <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#BE185D] mb-2 block">
                           {cat.shortTag}
                         </span>
-                        <h3 className="font-heading font-bold text-2xl sm:text-3xl text-white tracking-tight group-hover:text-cyan-300 transition-colors duration-300 mb-3">
+                        <h3 className="font-heading font-bold text-2xl sm:text-3xl text-[#1C242E] tracking-tight group-hover:text-[#BE185D] transition-colors duration-300 mb-3">
                           {cat.name}
                         </h3>
-                        <p className="text-brand-muted text-sm leading-relaxed font-normal mb-6">
+                        <p className="text-[#5A687A] text-sm leading-relaxed font-normal mb-6">
                           {cat.subtitle}
                         </p>
                       </div>
 
                       {/* Bottom Action Strip */}
-                      <div className="pt-5 border-t border-white/[0.06] flex items-center justify-between">
-                        <span className="text-xs font-medium text-brand-muted/80">
+                      <div className="pt-5 border-t border-[#E8E2D8] flex items-center justify-between">
+                        <span className="text-xs font-medium text-[#8A96A6]">
                           {cat.facilityCount}
                         </span>
-                        <div className="inline-flex items-center gap-2 text-xs font-heading font-bold uppercase tracking-wider text-white group-hover:text-cyan-400 transition-colors">
+                        <div className="inline-flex items-center gap-2 text-xs font-heading font-bold uppercase tracking-wider text-[#1C242E] group-hover:text-[#BE185D] transition-colors">
                           <span>Open Detailed View</span>
                           <ArrowRight
                             size={15}
@@ -384,26 +379,26 @@ export const TestsAndSurgery: React.FC = () => {
                     const cat = categories[mobileCarouselIdx]
                     const Icon = cat.icon
                     return (
-                      <div className="group relative rounded-3xl bg-[#050912] border border-white/[0.1] p-6 flex flex-col justify-between shadow-2xl text-left">
+                      <div className="group relative rounded-3xl bg-[#FAF8F5] border border-[#E8E2D8] p-6 flex flex-col justify-between shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] text-left">
                         {/* Top Accent Line */}
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent" />
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BE185D]/60 to-transparent" />
 
                         <div>
                           {/* Image preview for mobile visual richness */}
-                          <div className="relative rounded-2xl overflow-hidden aspect-[16/9] mb-5 border border-white/[0.08] bg-[#07111D]">
+                          <div className="relative rounded-2xl overflow-hidden aspect-[16/9] mb-5 border border-[#E8E2D8] bg-stone-100">
                             <img
                               src={cat.image}
                               alt={cat.imageCaption}
                               className="w-full h-full object-cover"
                               loading="lazy"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#050912]/80 via-transparent to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/70 via-transparent to-transparent pointer-events-none" />
                             <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[11px]">
                               <span className="font-heading font-medium text-white">
                                 {cat.imageCaption}
                               </span>
                               {cat.palasaOnly && (
-                                <span className="px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[10px] font-semibold uppercase">
+                                <span className="px-2 py-0.5 rounded-full bg-white/90 border border-white text-[#BE185D] text-[10px] font-semibold uppercase">
                                   Palasa OT
                                 </span>
                               )}
@@ -413,35 +408,35 @@ export const TestsAndSurgery: React.FC = () => {
                           {/* Meta Bar */}
                           <div className="flex items-center justify-between gap-3 mb-4">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                              <div className="w-10 h-10 rounded-xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D]">
                                 <Icon size={18} />
                               </div>
-                              <span className="font-heading font-extrabold text-xl text-white/30">
+                              <span className="font-heading font-extrabold text-xl text-stone-300">
                                 {cat.number}
                               </span>
                             </div>
-                            <span className="text-[11px] font-heading font-semibold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/20">
+                            <span className="text-[11px] font-heading font-semibold uppercase tracking-wider text-[#BE185D] bg-[#FDF2F4] px-2.5 py-1 rounded-full border border-[#FCE7F3]">
                               {cat.shortTag}
                             </span>
                           </div>
 
                           {/* Title & Subtitle */}
-                          <h3 className="font-heading font-bold text-2xl text-white tracking-tight mb-2">
+                          <h3 className="font-heading font-bold text-2xl text-[#1C242E] tracking-tight mb-2">
                             {cat.name}
                           </h3>
-                          <p className="text-brand-muted text-xs sm:text-sm leading-relaxed mb-5 font-normal">
+                          <p className="text-[#5A687A] text-xs sm:text-sm leading-relaxed mb-5 font-normal">
                             {cat.subtitle}
                           </p>
                         </div>
 
                         {/* Action Strip */}
-                        <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
-                          <span className="text-xs font-medium text-brand-muted">
+                        <div className="pt-4 border-t border-[#E8E2D8] flex items-center justify-between">
+                          <span className="text-xs font-medium text-[#8A96A6]">
                             {cat.facilityCount}
                           </span>
                           <button
                             onClick={() => handleOpenCategory(mobileCarouselIdx)}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-400 text-slate-950 font-heading font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-transform cursor-pointer"
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#BE185D] text-white font-heading font-bold text-xs uppercase tracking-wider shadow-sm active:scale-95 transition-transform cursor-pointer"
                           >
                             <span>Explore Details</span>
                             <ArrowRight size={13} />
@@ -459,7 +454,7 @@ export const TestsAndSurgery: React.FC = () => {
                       setMobileCarouselIdx((prev) => (prev > 0 ? prev - 1 : total - 1))
                     }
                     aria-label="Previous Infrastructure Category"
-                    className="w-9 h-9 rounded-full border border-white/[0.12] bg-white/[0.04] active:bg-white/[0.12] flex items-center justify-center text-white cursor-pointer"
+                    className="w-9 h-9 rounded-full border border-[#E8E2D8] bg-white active:bg-stone-100 flex items-center justify-center text-[#1C242E] cursor-pointer shadow-xs"
                   >
                     <ChevronLeft size={16} />
                   </button>
@@ -476,8 +471,8 @@ export const TestsAndSurgery: React.FC = () => {
                         <span
                           className={`block rounded-full transition-all duration-300 ${
                             idx === mobileCarouselIdx
-                              ? 'w-6 h-1.5 bg-cyan-400'
-                              : 'w-1.5 h-1.5 bg-white/25'
+                              ? 'w-6 h-1.5 bg-[#BE185D]'
+                              : 'w-1.5 h-1.5 bg-stone-300'
                           }`}
                         />
                       </button>
@@ -489,7 +484,7 @@ export const TestsAndSurgery: React.FC = () => {
                       setMobileCarouselIdx((prev) => (prev < total - 1 ? prev + 1 : 0))
                     }
                     aria-label="Next Infrastructure Category"
-                    className="w-9 h-9 rounded-full border border-white/[0.12] bg-white/[0.04] active:bg-white/[0.12] flex items-center justify-center text-white cursor-pointer"
+                    className="w-9 h-9 rounded-full border border-[#E8E2D8] bg-white active:bg-stone-100 flex items-center justify-center text-[#1C242E] cursor-pointer shadow-xs"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -506,21 +501,21 @@ export const TestsAndSurgery: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className="rounded-3xl bg-[#050912] border border-white/[0.1] shadow-2xl p-6 sm:p-10 lg:p-12 relative overflow-hidden"
+              className="rounded-3xl bg-[#FAF8F5] border border-[#E8E2D8] shadow-[0_8px_30px_rgba(28,36,46,0.06)] p-6 sm:p-10 lg:p-12 relative overflow-hidden"
             >
               {/* Subtle top accent gradient */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500/20 via-cyan-400 to-blue-500/20" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#BE185D]/30 via-[#BE185D] to-rose-400/30" />
 
               {/* ── Top Controls Bar ────────────────────────────────────────── */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-8 border-b border-white/[0.08] mb-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-8 border-b border-[#E8E2D8] mb-8">
                 {/* Back to Overview Button */}
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 font-heading text-xs font-semibold tracking-wide transition-all duration-300 w-fit cursor-pointer group"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-stone-100 text-[#1C242E] border border-[#E8E2D8] font-heading text-xs font-semibold tracking-wide transition-all duration-300 w-fit cursor-pointer group shadow-xs"
                 >
                   <ArrowLeft
                     size={14}
-                    className="transform group-hover:-translate-x-1 transition-transform duration-200"
+                    className="transform group-hover:-translate-x-1 transition-transform duration-200 text-[#BE185D]"
                   />
                   <span>Back to All Categories</span>
                 </button>
@@ -533,8 +528,8 @@ export const TestsAndSurgery: React.FC = () => {
                       onClick={() => setSelectedCategory(idx)}
                       className={`px-3.5 py-1.5 rounded-full font-heading text-xs font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
                         idx === selectedCategory
-                          ? 'bg-cyan-400 text-slate-950 shadow-md font-bold'
-                          : 'bg-white/[0.04] text-brand-muted hover:text-white hover:bg-white/[0.08] border border-white/[0.06]'
+                          ? 'bg-[#BE185D] text-white shadow-sm font-bold'
+                          : 'bg-white text-[#5A687A] hover:text-[#1C242E] hover:bg-stone-100 border border-[#E8E2D8]'
                       }`}
                     >
                       {cat.name}
@@ -547,17 +542,17 @@ export const TestsAndSurgery: React.FC = () => {
                   <button
                     onClick={handlePrevCategory}
                     aria-label="Previous Category"
-                    className="p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-white border border-white/10 transition-colors cursor-pointer"
+                    className="p-2 rounded-full bg-white hover:bg-stone-100 text-[#1C242E] border border-[#E8E2D8] transition-colors cursor-pointer shadow-xs"
                   >
                     <ChevronLeft size={16} />
                   </button>
-                  <span className="text-xs font-heading font-medium text-brand-muted px-1">
+                  <span className="text-xs font-heading font-medium text-[#5A687A] px-1">
                     {selectedCategory + 1} of {total}
                   </span>
                   <button
                     onClick={handleNextCategory}
                     aria-label="Next Category"
-                    className="p-2 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-white border border-white/10 transition-colors cursor-pointer"
+                    className="p-2 rounded-full bg-white hover:bg-stone-100 text-[#1C242E] border border-[#E8E2D8] transition-colors cursor-pointer shadow-xs"
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -575,34 +570,34 @@ export const TestsAndSurgery: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start mb-10">
                       <div className="lg:col-span-7">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                          <div className="w-10 h-10 rounded-xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D]">
                             <Icon size={18} />
                           </div>
-                          <span className="text-xs font-heading font-semibold uppercase tracking-widest text-cyan-400">
+                          <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#BE185D]">
                             Category {current.number} &bull; {current.shortTag}
                           </span>
                         </div>
 
-                        <h3 className="font-heading font-bold text-2xl sm:text-4xl text-white tracking-tight leading-tight mb-4">
+                        <h3 className="font-heading font-bold text-2xl sm:text-4xl text-[#1C242E] tracking-tight leading-tight mb-4">
                           {current.title}
                         </h3>
 
-                        <p className="text-brand-muted text-base sm:text-lg leading-relaxed font-normal">
+                        <p className="text-[#5A687A] text-base sm:text-lg leading-relaxed font-normal">
                           {current.subtitle}
                         </p>
 
-                        {/* Palasa-Only Explicit Notice (Mandatory Requirement) */}
+                        {/* Palasa-Only Explicit Notice */}
                         {current.palasaOnly && (
-                          <div className="mt-6 flex items-start gap-3.5 p-4 sm:p-5 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 text-xs sm:text-sm font-medium">
+                          <div className="mt-6 flex items-start gap-3.5 p-4 sm:p-5 rounded-2xl bg-[#FDF2F4] border border-[#FCE7F3] text-[#1C242E] text-xs sm:text-sm font-medium">
                             <ShieldAlert
                               size={20}
-                              className="text-cyan-400 shrink-0 mt-0.5"
+                              className="text-[#BE185D] shrink-0 mt-0.5"
                             />
                             <div>
-                              <strong className="text-white font-semibold block mb-1">
+                              <strong className="text-[#BE185D] font-semibold block mb-1">
                                 Surgical services are available only at Palasa.
                               </strong>
-                              <span>
+                              <span className="text-[#5A687A]">
                                 All surgical procedures, sterile operating theatre admissions, and recovery facilities are conducted exclusively at the Palasa Main Hospital. Diagnostic evaluations and pre-op consultations are available at all branches.
                               </span>
                             </div>
@@ -612,19 +607,19 @@ export const TestsAndSurgery: React.FC = () => {
 
                       {/* Supporting Clinical Photography */}
                       <div className="lg:col-span-5">
-                        <div className="relative rounded-2xl overflow-hidden border border-white/[0.1] bg-[#07111D] aspect-[16/10] shadow-2xl group">
+                        <div className="relative rounded-2xl overflow-hidden border border-[#E8E2D8] bg-white aspect-[16/10] shadow-[0_4px_20px_rgba(28,36,46,0.05)] group">
                           <img
                             src={current.image}
                             alt={current.imageCaption}
                             className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
                             loading="lazy"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#050912]/85 via-transparent to-transparent pointer-events-none" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/70 via-transparent to-transparent pointer-events-none" />
                           <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between text-xs">
                             <span className="font-heading font-medium text-white">
                               {current.imageCaption}
                             </span>
-                            <span className="text-[11px] uppercase tracking-wider text-cyan-300 font-semibold">
+                            <span className="text-[11px] uppercase tracking-wider text-rose-200 font-semibold">
                               {current.scopeBadge}
                             </span>
                           </div>
@@ -634,11 +629,11 @@ export const TestsAndSurgery: React.FC = () => {
 
                     {/* Section Divider */}
                     <div className="flex items-center gap-4 my-8">
-                      <div className="h-px bg-white/[0.08] flex-grow" />
-                      <span className="text-xs font-heading font-semibold uppercase tracking-widest text-brand-muted">
+                      <div className="h-px bg-[#E8E2D8] flex-grow" />
+                      <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#8A96A6]">
                         All {current.name} Capabilities ({current.items.length})
                       </span>
-                      <div className="h-px bg-white/[0.08] flex-grow" />
+                      <div className="h-px bg-[#E8E2D8] flex-grow" />
                     </div>
 
                     {/* ── ALL RELEVANT POINTS: Spacious, Symmetrical Card Grid ───── */}
@@ -652,22 +647,22 @@ export const TestsAndSurgery: React.FC = () => {
                       {current.items.map((item, idx) => (
                         <div
                           key={idx}
-                          className="p-6 sm:p-7 rounded-2xl bg-[#07111D] border border-white/[0.06] hover:border-cyan-500/30 transition-all duration-300 shadow-xl flex flex-col justify-between group"
+                          className="p-6 sm:p-7 rounded-2xl bg-white border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)] flex flex-col justify-between group"
                         >
                           <div>
                             {/* Item Header */}
                             <div className="flex items-center justify-between mb-3.5">
-                              <span className="font-heading font-extrabold text-lg sm:text-xl text-cyan-400/50 group-hover:text-cyan-400 transition-colors duration-300 tabular-nums">
+                              <span className="font-heading font-extrabold text-lg sm:text-xl text-[#BE185D]/40 group-hover:text-[#BE185D] transition-colors duration-300 tabular-nums">
                                 {String(idx + 1).padStart(2, '0')}
                               </span>
-                              <div className="w-2 h-2 rounded-full bg-cyan-500/30 group-hover:bg-cyan-400 transition-colors" />
+                              <div className="w-2 h-2 rounded-full bg-rose-200 group-hover:bg-[#BE185D] transition-colors" />
                             </div>
 
-                            <h4 className="font-heading font-bold text-base sm:text-lg text-white tracking-tight group-hover:text-cyan-300 transition-colors mb-2.5">
+                            <h4 className="font-heading font-bold text-base sm:text-lg text-[#1C242E] tracking-tight group-hover:text-[#BE185D] transition-colors mb-2.5">
                               {item.name}
                             </h4>
 
-                            <p className="text-brand-muted text-sm leading-relaxed font-normal">
+                            <p className="text-[#5A687A] text-sm leading-relaxed font-normal">
                               {item.description}
                             </p>
                           </div>
@@ -676,14 +671,14 @@ export const TestsAndSurgery: React.FC = () => {
                     </div>
 
                     {/* ── Bottom Panel Navigation Bar ─────────────────────────────── */}
-                    <div className="mt-12 pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="mt-12 pt-8 border-t border-[#E8E2D8] flex flex-col sm:flex-row items-center justify-between gap-4">
                       <button
                         onClick={handlePrevCategory}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-white border border-white/10 font-heading text-xs font-semibold tracking-wide transition-all cursor-pointer group"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-white hover:bg-stone-100 text-[#1C242E] border border-[#E8E2D8] font-heading text-xs font-semibold tracking-wide transition-all cursor-pointer group shadow-xs"
                       >
                         <ChevronLeft
                           size={16}
-                          className="transform group-hover:-translate-x-1 transition-transform"
+                          className="transform group-hover:-translate-x-1 transition-transform text-[#BE185D]"
                         />
                         <span>
                           Previous:{' '}
@@ -699,15 +694,15 @@ export const TestsAndSurgery: React.FC = () => {
 
                       <button
                         onClick={() => setSelectedCategory(null)}
-                        className="inline-flex items-center gap-2 text-xs font-heading font-medium text-brand-muted hover:text-white transition-colors cursor-pointer py-2"
+                        className="inline-flex items-center gap-2 text-xs font-heading font-medium text-[#5A687A] hover:text-[#1C242E] transition-colors cursor-pointer py-2"
                       >
-                        <LayoutGrid size={14} className="text-cyan-400" />
+                        <LayoutGrid size={14} className="text-[#BE185D]" />
                         <span>View All 4 Categories</span>
                       </button>
 
                       <button
                         onClick={handleNextCategory}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.10] text-white border border-white/10 font-heading text-xs font-semibold tracking-wide transition-all cursor-pointer group"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-white hover:bg-stone-100 text-[#1C242E] border border-[#E8E2D8] font-heading text-xs font-semibold tracking-wide transition-all cursor-pointer group shadow-xs"
                       >
                         <span>
                           Next:{' '}
@@ -721,7 +716,7 @@ export const TestsAndSurgery: React.FC = () => {
                         </span>
                         <ChevronRight
                           size={16}
-                          className="transform group-hover:translate-x-1 transition-transform"
+                          className="transform group-hover:translate-x-1 transition-transform text-[#BE185D]"
                         />
                       </button>
                     </div>

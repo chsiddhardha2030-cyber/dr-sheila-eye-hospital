@@ -23,18 +23,18 @@ export const Doctors: React.FC = () => {
   return (
     <section
       id="doctors"
-      className="bg-[#050912] pt-14 pb-8 md:py-28 text-brand-ivory font-sans border-b border-white/[0.06] relative"
+      className="bg-[#FAF8F5] pt-14 pb-8 md:py-28 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         {/* Section Header */}
         <div className="mb-10 md:mb-16">
-          <span className="text-[12px] font-heading font-medium tracking-[0.25em] uppercase text-cyan-400 mb-3 block">
+          <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-3 block">
             Medical Leadership
           </span>
-          <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-white tracking-[-0.03em] leading-[1.15] mb-4">
+          <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.15] mb-4">
             Experienced Ophthalmic Surgeons
           </h2>
-          <p className="text-brand-muted text-sm max-w-md font-normal leading-relaxed">
+          <p className="text-[#5A687A] text-sm max-w-md font-normal leading-relaxed">
             Leading clinical precision, microsurgical care, and dedicated patient treatment across Srikakulam.
           </p>
         </div>
@@ -48,14 +48,14 @@ export const Doctors: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.7, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
-              className="p-6 sm:p-8 rounded-2xl bg-[#07111D] border border-white/[0.08] hover:border-cyan-500/30 transition-all duration-300 shadow-xl group flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left relative overflow-hidden"
+              className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)] group flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left relative overflow-hidden"
             >
               {/* Subtle top accent gradient */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BE185D]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               {/* Small Clean Circular Portrait */}
               <div className="relative shrink-0">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-br from-white/20 via-cyan-500/30 to-white/5 group-hover:from-cyan-400 group-hover:to-blue-600 transition-all duration-500 shadow-lg">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-br from-stone-200 via-rose-100 to-stone-100 group-hover:from-rose-400 group-hover:to-[#BE185D] transition-all duration-500 shadow-md">
                   <img
                     src={doctor.image}
                     alt={doctor.alt}
@@ -63,7 +63,7 @@ export const Doctors: React.FC = () => {
                     loading="lazy"
                   />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#050912] border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-md">
+                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border border-rose-200 flex items-center justify-center text-[#BE185D] shadow-sm">
                   <Stethoscope size={13} />
                 </div>
               </div>
@@ -71,22 +71,22 @@ export const Doctors: React.FC = () => {
               {/* Doctor Details */}
               <div className="flex flex-col flex-grow justify-center">
                 <div className="inline-flex items-center justify-center sm:justify-start gap-2 mb-1.5">
-                  <span className="text-[11px] font-heading font-semibold tracking-wider text-cyan-400 uppercase bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/20">
+                  <span className="text-[11px] font-heading font-semibold tracking-wider text-[#BE185D] uppercase bg-[#FDF2F4] px-2.5 py-0.5 rounded-full border border-[#FCE7F3]">
                     {doctor.qualification}
                   </span>
                 </div>
 
-                <h3 className="font-heading font-bold text-2xl text-white tracking-tight group-hover:text-cyan-300 transition-colors mb-1">
+                <h3 className="font-heading font-bold text-2xl text-[#1C242E] tracking-tight group-hover:text-[#BE185D] transition-colors mb-1">
                   {doctor.name}
                 </h3>
 
-                <p className="text-brand-muted text-sm font-medium mb-3">
+                <p className="text-[#5A687A] text-sm font-medium mb-3">
                   {doctor.title}
                 </p>
 
-                <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-brand-subtle">
-                  <Award size={13} className="text-cyan-400/80 shrink-0" />
-                  <span>Comprehensive Clinical & Surgical Eye Care</span>
+                <div className="flex items-center justify-center sm:justify-start gap-2 text-xs text-[#8A96A6]">
+                  <Award size={13} className="text-[#BE185D] shrink-0" />
+                  <span>Comprehensive Clinical &amp; Surgical Eye Care</span>
                 </div>
               </div>
             </motion.div>

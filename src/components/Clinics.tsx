@@ -93,32 +93,32 @@ export const Clinics: React.FC = () => {
   }
 
   return (
-    <section id="clinics" className="bg-[#07111D] py-24 md:py-36 text-brand-ivory font-sans border-b border-white/[0.06]">
+    <section id="clinics" className="bg-[#FAF8F5] py-24 md:py-36 text-[#1C242E] font-sans border-b border-[#E8E2D8]">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         
         {/* Section Header */}
         <div className="max-w-3xl mb-12 md:mb-16">
-          <span className="text-[12px] font-heading font-medium tracking-[0.25em] uppercase text-cyan-400 mb-3 block">
+          <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-3 block">
             Clinical Locations
           </span>
-          <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-white tracking-[-0.03em] leading-[1.12] mb-4">
+          <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.12] mb-4">
             Three Accessible Hospital Branches
           </h2>
-          <p className="text-brand-muted text-base sm:text-lg font-normal leading-relaxed">
+          <p className="text-[#5A687A] text-base sm:text-lg font-normal leading-relaxed">
             Delivering trusted ophthalmic care across the Srikakulam district with dedicated clinical facilities in Palasa, Sompeta, and Ichapuram.
           </p>
         </div>
 
         {/* Simple Branch Selector Tabs */}
-        <div className="flex flex-wrap gap-2.5 pb-6 border-b border-white/[0.08] mb-10">
+        <div className="flex flex-wrap gap-2.5 pb-6 border-b border-[#E8E2D8] mb-10">
           {branches.map((branch) => (
             <button
               key={branch.id}
               onClick={() => setActiveBranch(branch.id)}
               className={`px-5 py-2.5 rounded-full font-heading text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
                 activeBranch === branch.id
-                  ? 'bg-cyan-400 text-slate-950 shadow-lg font-bold'
-                  : 'bg-white/[0.04] text-brand-muted hover:text-white hover:bg-white/[0.08] border border-white/[0.06]'
+                  ? 'bg-[#1C242E] text-white shadow-md font-bold'
+                  : 'bg-white text-[#5A687A] hover:text-[#1C242E] hover:bg-stone-50 border border-[#E8E2D8]'
               }`}
             >
               {branch.town}
@@ -126,7 +126,7 @@ export const Clinics: React.FC = () => {
           ))}
         </div>
 
-        {/* Selected Branch Simple Editorial Presentation */}
+        {/* Selected Branch Editorial Card Presentation */}
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id}
@@ -134,35 +134,35 @@ export const Clinics: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center bg-white p-8 sm:p-12 rounded-3xl border border-[#E8E2D8] shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)]"
           >
             {/* Left: Branch Details & Contact */}
             <div className="lg:col-span-6 flex flex-col items-start">
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-xs font-heading font-semibold uppercase tracking-widest text-cyan-400">
+                <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#BE185D]">
                   {current.town} Center
                 </span>
                 {current.surgical && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-[11px] font-medium">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#FDF2F4] border border-[#FCE7F3] text-[#BE185D] text-[11px] font-semibold">
                     Surgical Hospital
                   </span>
                 )}
               </div>
 
-              <h3 className="font-heading font-bold text-2xl sm:text-4xl text-white tracking-tight leading-tight mb-3">
+              <h3 className="font-heading font-bold text-2xl sm:text-4xl text-[#1C242E] tracking-tight leading-tight mb-3">
                 {current.name}
               </h3>
               
-              <p className="text-brand-muted text-sm sm:text-base leading-relaxed mb-6 font-normal">
+              <p className="text-[#5A687A] text-sm sm:text-base leading-relaxed mb-6 font-normal">
                 {current.tagline}
               </p>
 
-              <div className="w-full h-px bg-white/[0.06] mb-6" />
+              <div className="w-full h-px bg-[#E8E2D8] mb-6" />
 
               {/* Address & Emergency Info */}
               <div className="flex flex-col gap-4 mb-8 w-full text-sm">
-                <div className="flex items-start gap-3 text-slate-300">
-                  <MapPin size={18} className="text-cyan-400 shrink-0 mt-1" />
+                <div className="flex items-start gap-3 text-stone-700">
+                  <MapPin size={18} className="text-[#BE185D] shrink-0 mt-1" />
                   <div className="flex flex-col leading-relaxed">
                     {current.addressLines.map((line, idx) => (
                       <span key={idx}>{line}</span>
@@ -170,15 +170,15 @@ export const Clinics: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 text-slate-400 text-xs sm:text-sm">
-                  <Phone size={16} className="text-cyan-400/80 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 text-[#5A687A] text-xs sm:text-sm">
+                  <Phone size={16} className="text-[#BE185D] shrink-0 mt-0.5" />
                   <div className="flex flex-col gap-1">
-                    <span className="text-brand-muted">
-                      Emergency / Reception: {current.phone}
+                    <span className="text-stone-700">
+                      Emergency / Reception: <strong className="text-[#1C242E]">{current.phone}</strong>
                     </span>
                     {current.opticals && (
-                      <span className="text-brand-muted">
-                        Opticals: {current.opticals}
+                      <span className="text-stone-700">
+                        Opticals: <strong className="text-[#1C242E]">{current.opticals}</strong>
                       </span>
                     )}
                   </div>
@@ -189,7 +189,7 @@ export const Clinics: React.FC = () => {
               <div className="flex flex-wrap items-center gap-3.5 w-full sm:w-auto">
                 <a
                   href={current.phoneHref}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-heading font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-xl cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-sm cursor-pointer"
                 >
                   <PhoneCall size={14} />
                   <span>Call Now</span>
@@ -197,33 +197,33 @@ export const Clinics: React.FC = () => {
 
                 <button
                   onClick={scrollToAppointment}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-heading font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-xl cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-stone-50 text-[#1C242E] font-heading font-bold text-xs uppercase tracking-wider border border-[#E8E2D8] transition-all duration-300 shadow-xs cursor-pointer"
                 >
                   Book for this Branch
                 </button>
 
                 <button
                   onClick={() => handleDirectionsClick(current)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 font-heading font-medium text-xs uppercase tracking-wider transition-all cursor-pointer group"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-full bg-stone-100 hover:bg-stone-200 text-[#1C242E] border border-[#E8E2D8] font-heading font-medium text-xs uppercase tracking-wider transition-all cursor-pointer group shadow-xs"
                 >
                   <span>Get Directions</span>
-                  <ArrowUpRight size={15} className="text-cyan-400 group-hover:text-white transition-colors" />
+                  <ArrowUpRight size={15} className="text-[#BE185D] group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
             </div>
 
             {/* Right: Branch Photography */}
             <div className="lg:col-span-6">
-              <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] bg-[#050912] aspect-[4/3] shadow-2xl">
+              <div className="relative rounded-2xl overflow-hidden border border-[#E8E2D8] bg-[#FAF8F5] aspect-[4/3] shadow-md">
                 <img
                   src={current.image}
                   alt={`${current.name} facility`}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050912]/70 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/70 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute bottom-4 left-5 right-5">
-                  <span className="inline-block px-3 py-1 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/10 text-xs font-heading font-medium text-white/90">
+                  <span className="inline-block px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-xs font-heading font-semibold text-[#1C242E] shadow-sm">
                     {current.name}
                   </span>
                 </div>
@@ -242,43 +242,43 @@ export const Clinics: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[#050912]/85 backdrop-blur-xl z-50 flex items-center justify-center p-6"
+            className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-6"
           >
             <motion.div
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="p-7 sm:p-8 rounded-3xl bg-[#07111D] border border-white/10 max-w-md w-full relative shadow-2xl text-brand-ivory"
+              className="p-7 sm:p-8 rounded-3xl bg-white border border-[#E8E2D8] max-w-md w-full relative shadow-2xl text-[#1C242E]"
             >
               <button
                 onClick={() => setShowIchapuramModal(false)}
-                className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white text-white hover:text-slate-950 transition-colors cursor-pointer"
+                className="absolute top-5 right-5 p-2 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
                 aria-label="Close Notice"
               >
                 <X size={16} />
               </button>
 
               <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                <div className="w-12 h-12 rounded-full bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D]">
                   <Info size={22} />
                 </div>
 
                 <div>
-                  <h3 className="font-heading font-bold text-xl text-white mb-1.5">
+                  <h3 className="font-heading font-bold text-xl text-[#1C242E] mb-1.5">
                     Ichapuram Branch Directions
                   </h3>
-                  <p className="text-cyan-400 text-xs font-heading font-semibold uppercase tracking-wider">
+                  <p className="text-[#BE185D] text-xs font-heading font-semibold uppercase tracking-wider">
                     Dasannapeta Junction &bull; Ichapuram
                   </p>
                 </div>
 
-                <p className="text-sm text-brand-muted leading-relaxed">
+                <p className="text-sm text-[#5A687A] leading-relaxed">
                   Google Maps location is not available for this branch yet. Please contact the hospital for directions.
                 </p>
 
-                <div className="w-full p-4 rounded-xl bg-[#050912] border border-white/[0.08] flex items-center justify-between mt-1">
-                  <span className="text-xs text-brand-muted font-medium">Emergency / Reception:</span>
-                  <span className="font-heading font-semibold text-slate-300 text-sm">
+                <div className="w-full p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D8] flex items-center justify-between mt-1">
+                  <span className="text-xs text-[#5A687A] font-medium">Emergency / Reception:</span>
+                  <span className="font-heading font-semibold text-[#1C242E] text-sm">
                     08947-231261
                   </span>
                 </div>
@@ -286,14 +286,14 @@ export const Clinics: React.FC = () => {
                 <div className="flex items-center gap-3 w-full mt-2">
                   <a
                     href="tel:08947231261"
-                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-heading font-bold text-xs uppercase tracking-wider transition-colors shadow-lg"
+                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors shadow-sm"
                   >
                     <PhoneCall size={14} />
                     <span>Call Now</span>
                   </a>
                   <button
                     onClick={() => setShowIchapuramModal(false)}
-                    className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-heading font-medium text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                    className="px-5 py-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-heading font-medium text-xs uppercase tracking-wider transition-colors cursor-pointer"
                   >
                     Close
                   </button>

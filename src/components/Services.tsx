@@ -116,16 +116,16 @@ export const Services: React.FC = () => {
   return (
     <section
       id="services"
-      className="bg-[#050912] py-28 md:py-36 text-brand-ivory font-sans border-b border-white/[0.06] relative"
+      className="bg-[#FAF8F5] py-24 md:py-36 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
 
         {/* ── Section Header ──────────────────────────────────────────────── */}
-        <div className="max-w-3xl mb-16 md:mb-20">
-          <span className="text-[12px] font-heading font-medium tracking-[0.25em] uppercase text-cyan-400 mb-4 block">
+        <div className="max-w-3xl mb-14 md:mb-20">
+          <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-4 block">
             Outpatient &amp; Clinical Care
           </span>
-          <h2 className="font-heading font-bold text-3xl sm:text-5xl text-white tracking-[-0.03em] leading-[1.12]">
+          <h2 className="font-heading font-bold text-3xl sm:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.12]">
             Comprehensive eye-care services delivered with clinical precision.
           </h2>
         </div>
@@ -137,7 +137,7 @@ export const Services: React.FC = () => {
         <div className="hidden md:block">
 
           {/* Tab Navigation */}
-          <div className="flex flex-wrap gap-2.5 pb-8 border-b border-white/[0.08] mb-10">
+          <div className="flex flex-wrap gap-2.5 pb-8 border-b border-[#E8E2D8] mb-10">
             {serviceGroups.map((group) => {
               const Icon = group.icon
               const isActive = activeTab === group.id
@@ -145,13 +145,13 @@ export const Services: React.FC = () => {
                 <button
                   key={group.id}
                   onClick={() => setActiveTab(group.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full font-heading text-xs font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-heading text-xs font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
                     isActive
-                      ? 'bg-white text-slate-950 shadow-xl'
-                      : 'bg-white/[0.04] text-brand-muted hover:text-white hover:bg-white/[0.08] border border-white/[0.06]'
+                      ? 'bg-[#1C242E] text-white shadow-md'
+                      : 'bg-white text-[#5A687A] hover:text-[#1C242E] hover:bg-stone-50 border border-[#E8E2D8]'
                   }`}
                 >
-                  <Icon size={13} className={isActive ? 'text-slate-950' : 'text-cyan-400'} />
+                  <Icon size={14} className={isActive ? 'text-rose-300' : 'text-[#BE185D]'} />
                   <span>{group.name}</span>
                 </button>
               )
@@ -166,31 +166,31 @@ export const Services: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-              className="grid grid-cols-12 gap-10 lg:gap-14 items-start"
+              className="grid grid-cols-12 gap-10 lg:gap-14 items-start bg-white p-8 sm:p-10 rounded-3xl border border-[#E8E2D8] shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)]"
             >
               {/* Left: tagline + name + description */}
               <div className="col-span-5 flex flex-col">
-                <span className="text-xs font-heading font-semibold uppercase tracking-widest text-cyan-400 mb-2 block">
+                <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#BE185D] mb-2 block">
                   {activeGroup.tagline}
                 </span>
-                <h3 className="font-heading font-bold text-2xl sm:text-3xl text-white tracking-tight mb-4">
+                <h3 className="font-heading font-bold text-2xl sm:text-3xl text-[#1C242E] tracking-tight mb-4">
                   {activeGroup.name}
                 </h3>
-                <div className="h-px bg-white/[0.06] mb-4" />
-                <p className="text-brand-muted text-base leading-relaxed font-normal">
+                <div className="h-px bg-[#E8E2D8] mb-4" />
+                <p className="text-[#5A687A] text-base leading-relaxed font-normal">
                   {activeGroup.description}
                 </p>
               </div>
 
               {/* Right: numbered points */}
               <div className="col-span-7">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {activeGroup.points.map((point, idx) => (
-                    <div key={idx} className="flex items-start gap-3.5">
-                      <span className="shrink-0 w-5 h-5 rounded-full border border-cyan-500/40 bg-cyan-500/8 flex items-center justify-center text-[10px] font-heading font-bold text-cyan-400 mt-0.5">
+                    <div key={idx} className="flex items-start gap-3.5 p-3 rounded-xl bg-[#FAF8F5] border border-[#F0ECE4]">
+                      <span className="shrink-0 w-5 h-5 rounded-full border border-[#FCE7F3] bg-[#FDF2F4] flex items-center justify-center text-[10px] font-heading font-bold text-[#BE185D] mt-0.5">
                         {idx + 1}
                       </span>
-                      <span className="text-sm text-slate-300 font-normal leading-snug">
+                      <span className="text-sm text-stone-700 font-normal leading-snug">
                         {point}
                       </span>
                     </div>
@@ -203,7 +203,7 @@ export const Services: React.FC = () => {
 
         {/* ══════════════════════════════════════════════════════════════════
             MOBILE LAYOUT
-            Horizontal swipe service cards (no hospital photo)
+            Horizontal swipe service cards
         ══════════════════════════════════════════════════════════════════ */}
         <div className="md:hidden">
 
@@ -224,11 +224,11 @@ export const Services: React.FC = () => {
                     onClick={() => { setMobileIndex(idx); setActiveTab(group.id) }}
                     className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full font-heading text-xs font-semibold tracking-wide transition-all duration-300 cursor-pointer shrink-0 ${
                       mobileIndex === idx
-                        ? 'bg-white text-slate-950 shadow-xl'
-                        : 'bg-white/[0.05] text-brand-muted border border-white/[0.08]'
+                        ? 'bg-[#1C242E] text-white shadow-md'
+                        : 'bg-white text-[#5A687A] border border-[#E8E2D8]'
                     }`}
                   >
-                    <Icon size={12} className={mobileIndex === idx ? 'text-slate-950' : 'text-cyan-400'} />
+                    <Icon size={12} className={mobileIndex === idx ? 'text-rose-300' : 'text-[#BE185D]'} />
                     <span>{group.name}</span>
                   </button>
                 )
@@ -249,24 +249,24 @@ export const Services: React.FC = () => {
               >
                 {serviceGroups.map((group) => (
                   <div key={group.id} className="w-full shrink-0">
-                    <div className="p-6 rounded-2xl bg-[#07111D] border border-white/[0.06] shadow-xl">
-                      <span className="text-[10px] font-heading font-semibold uppercase tracking-widest text-cyan-400 mb-1.5 block">
+                    <div className="p-6 rounded-2xl bg-white border border-[#E8E2D8] shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)]">
+                      <span className="text-[10px] font-heading font-semibold uppercase tracking-widest text-[#BE185D] mb-1.5 block">
                         {group.tagline}
                       </span>
-                      <h3 className="font-heading font-bold text-xl text-white tracking-tight mb-2">
+                      <h3 className="font-heading font-bold text-xl text-[#1C242E] tracking-tight mb-2">
                         {group.name}
                       </h3>
-                      <p className="text-brand-muted text-sm leading-relaxed mb-5 font-normal">
+                      <p className="text-[#5A687A] text-sm leading-relaxed mb-5 font-normal">
                         {group.description}
                       </p>
-                      <div className="h-px bg-white/[0.06] mb-5" />
+                      <div className="h-px bg-[#E8E2D8] mb-5" />
                       <div className="flex flex-col gap-2.5">
                         {group.points.map((point, idx) => (
-                          <div key={idx} className="flex items-start gap-3">
-                            <span className="shrink-0 w-5 h-5 rounded-full border border-cyan-500/40 flex items-center justify-center text-[10px] font-heading font-bold text-cyan-400 mt-0.5">
+                          <div key={idx} className="flex items-start gap-3 p-2.5 rounded-xl bg-[#FAF8F5] border border-[#F0ECE4]">
+                            <span className="shrink-0 w-5 h-5 rounded-full border border-[#FCE7F3] bg-[#FDF2F4] flex items-center justify-center text-[10px] font-heading font-bold text-[#BE185D] mt-0.5">
                               {idx + 1}
                             </span>
-                            <span className="text-sm text-slate-300 font-normal leading-snug">
+                            <span className="text-sm text-stone-700 font-normal leading-snug">
                               {point}
                             </span>
                           </div>
@@ -290,8 +290,8 @@ export const Services: React.FC = () => {
                   <span
                     className={`block rounded-full transition-all duration-300 ${
                       mobileIndex === idx
-                        ? 'w-5 h-1.5 bg-cyan-400'
-                        : 'w-1.5 h-1.5 bg-white/25'
+                        ? 'w-5 h-1.5 bg-[#BE185D]'
+                        : 'w-1.5 h-1.5 bg-stone-300'
                     }`}
                   />
                 </button>
@@ -303,4 +303,3 @@ export const Services: React.FC = () => {
     </section>
   )
 }
-

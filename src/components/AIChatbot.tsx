@@ -79,10 +79,10 @@ export const AIChatbot: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
-        className="fixed bottom-20 right-6 z-40 p-3.5 bg-[#07111D] hover:bg-[#0d1a2d] text-brand-ivory rounded-full border border-white/10 shadow-2xl flex items-center justify-center cursor-pointer transition-colors duration-300"
+        className="fixed bottom-20 right-6 z-40 p-3.5 bg-white hover:bg-stone-50 text-[#1C242E] rounded-full border border-[#E8E2D8] shadow-[0_4px_20px_rgba(28,36,46,0.12)] flex items-center justify-center cursor-pointer transition-colors duration-300"
         aria-label="Toggle Hospital Assistant"
       >
-        {isOpen ? <X size={20} /> : <MessageSquare size={20} />}
+        {isOpen ? <X size={20} className="text-[#1C242E]" /> : <MessageSquare size={20} className="text-[#BE185D]" />}
       </motion.button>
 
       {/* Minimal Chat Drawer */}
@@ -93,31 +93,31 @@ export const AIChatbot: React.FC = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 30 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-36 right-6 z-40 w-80 sm:w-96 h-[460px] rounded-2xl overflow-hidden bg-[#07111D]/95 backdrop-blur-2xl border border-white/10 shadow-2xl flex flex-col font-sans text-brand-ivory"
+            className="fixed bottom-36 right-6 z-40 w-80 sm:w-96 h-[460px] rounded-2xl overflow-hidden bg-white border border-[#E8E2D8] shadow-2xl flex flex-col font-sans text-[#1C242E]"
           >
             {/* Header */}
-            <div className="px-5 py-4 bg-[#050912] border-b border-white/[0.08] flex items-center justify-between">
+            <div className="px-5 py-4 bg-[#FAF8F5] border-b border-[#E8E2D8] flex items-center justify-between">
               <div>
-                <h4 className="font-heading font-bold text-sm text-white">Hospital Information Assistant</h4>
-                <span className="text-[10px] text-brand-muted uppercase tracking-wider">Dr. Sheila Eye Hospitals</span>
+                <h4 className="font-heading font-bold text-sm text-[#1C242E]">Hospital Assistant</h4>
+                <span className="text-[10px] text-[#BE185D] font-heading font-semibold uppercase tracking-wider">Dr. Sheila Eye Hospitals</span>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-brand-muted hover:text-white p-1 transition-colors cursor-pointer"
+                className="text-[#5A687A] hover:text-[#1C242E] p-1 transition-colors cursor-pointer"
               >
                 <X size={16} />
               </button>
             </div>
 
             {/* Messages */}
-            <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-3 text-xs leading-relaxed bg-[#050912]/40">
+            <div className="flex-grow overflow-y-auto p-4 flex flex-col gap-3 text-xs leading-relaxed bg-[#FAF8F5]/60">
               {messages.map((m) => (
                 <div
                   key={m.id}
                   className={`p-3.5 rounded-xl max-w-[88%] whitespace-pre-line ${
                     m.sender === 'user'
-                      ? 'self-end bg-white/15 text-white border border-white/10'
-                      : 'self-start bg-[#0d1a2d] text-slate-300 border border-white/[0.06]'
+                      ? 'self-end bg-[#BE185D] text-white shadow-xs'
+                      : 'self-start bg-white text-stone-800 border border-[#E8E2D8] shadow-xs'
                   }`}
                 >
                   {m.text}
@@ -127,7 +127,7 @@ export const AIChatbot: React.FC = () => {
             </div>
 
             {/* Input */}
-            <div className="p-3 bg-[#050912] border-t border-white/[0.08] flex gap-2">
+            <div className="p-3 bg-white border-t border-[#E8E2D8] flex gap-2">
               <input
                 type="text"
                 value={inputValue}
@@ -136,11 +136,11 @@ export const AIChatbot: React.FC = () => {
                   if (e.key === 'Enter') handleSend()
                 }}
                 placeholder="Ask about surgeons, clinics, services..."
-                className="flex-grow bg-[#07111D] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-white/30 outline-none"
+                className="flex-grow bg-[#FAF8F5] border border-[#E8E2D8] rounded-lg px-3 py-2 text-xs text-[#1C242E] placeholder-stone-400 focus:border-[#BE185D] outline-none"
               />
               <button
                 onClick={handleSend}
-                className="p-2 bg-white text-slate-950 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                className="p-2 bg-[#BE185D] hover:bg-[#9F1239] text-white rounded-lg transition-colors cursor-pointer shadow-xs"
               >
                 <Send size={13} />
               </button>

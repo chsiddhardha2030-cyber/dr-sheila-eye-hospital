@@ -18,10 +18,10 @@ export const WhatsAppButton: React.FC = () => {
       animate={{ scale: 1, opacity: 1 }}
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.94 }}
-      className="fixed bottom-6 right-6 z-40 p-3.5 bg-[#0a1b14] hover:bg-[#0f281e] text-emerald-400 rounded-full border border-emerald-500/30 shadow-2xl flex items-center justify-center cursor-pointer transition-colors duration-300"
+      className="fixed bottom-6 right-6 z-40 p-3.5 bg-[#BE185D] hover:bg-[#9F1239] text-white rounded-full border border-white/30 shadow-[0_4px_20px_rgba(190,24,93,0.35)] flex items-center justify-center cursor-pointer transition-colors duration-300"
       aria-label="Contact on WhatsApp"
     >
-      <FaWhatsapp className="w-5 h-5 text-emerald-400" />
+      <FaWhatsapp className="w-5 h-5 text-white" />
     </motion.button>
   )
 }

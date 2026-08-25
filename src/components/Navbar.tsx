@@ -37,8 +37,8 @@ export const Navbar: React.FC = () => {
       <nav
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
           scrolled
-            ? 'bg-[#050912]/85 backdrop-blur-xl py-3.5 shadow-2xl'
-            : 'bg-transparent py-6'
+            ? 'bg-[#FAF8F5]/90 backdrop-blur-xl py-3.5 shadow-[0_2px_15px_-3px_rgba(28,36,46,0.06)] border-b border-[#E8E2D8]/80'
+            : 'bg-[#FAF8F5]/60 backdrop-blur-md py-5 border-b border-[#E8E2D8]/40'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
@@ -49,12 +49,12 @@ export const Navbar: React.FC = () => {
               e.preventDefault()
               handleLinkClick('#hero')
             }}
-            className="flex items-baseline gap-2 text-brand-ivory group"
+            className="flex items-baseline gap-2 group cursor-pointer"
           >
-            <span className="font-heading font-extrabold text-xl tracking-tight text-white group-hover:text-cyan-400 transition-colors">
+            <span className="font-heading font-extrabold text-xl tracking-tight text-[#1C242E] group-hover:text-[#BE185D] transition-colors">
               Dr. Sheila
             </span>
-            <span className="text-[11px] font-medium tracking-[0.2em] uppercase text-brand-muted">
+            <span className="text-[11px] font-medium tracking-[0.2em] uppercase text-[#5A687A]">
               Eye Hospitals
             </span>
           </a>
@@ -69,7 +69,7 @@ export const Navbar: React.FC = () => {
                   e.preventDefault()
                   handleLinkClick(link.href)
                 }}
-                className="font-sans text-[13px] font-medium text-brand-muted hover:text-brand-ivory transition-colors tracking-wide"
+                className="font-sans text-[13px] font-medium tracking-wide text-[#5A687A] hover:text-[#1C242E] transition-colors cursor-pointer"
               >
                 {link.name}
               </a>
@@ -80,7 +80,7 @@ export const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center">
             <button
               onClick={() => handleLinkClick('#appointment')}
-              className="px-5 py-2 rounded-full bg-white/10 hover:bg-white text-brand-ivory hover:text-slate-950 font-heading text-xs font-semibold tracking-wide border border-white/20 hover:border-white transition-all duration-300 backdrop-blur-sm cursor-pointer"
+              className="px-5 py-2 rounded-full font-heading text-xs font-semibold tracking-wide bg-[#BE185D] hover:bg-[#9F1239] text-white shadow-sm hover:shadow transition-all duration-300 cursor-pointer"
             >
               Book Appointment
             </button>
@@ -89,7 +89,7 @@ export const Navbar: React.FC = () => {
           {/* Mobile Hamburger Toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden text-brand-ivory hover:text-cyan-400 p-1.5 transition-colors cursor-pointer"
+            className="md:hidden p-1.5 text-[#1C242E] hover:text-[#BE185D] transition-colors cursor-pointer"
             aria-label="Toggle Navigation"
           >
             {isOpen ? <X size={22} /> : <Menu size={22} />}
@@ -105,7 +105,7 @@ export const Navbar: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-x-0 top-[60px] z-40 bg-[#050912]/95 backdrop-blur-2xl border-b border-white/[0.08] p-6 flex flex-col gap-6 md:hidden shadow-2xl"
+            className="fixed inset-x-0 top-[60px] z-40 bg-[#FAF8F5]/98 backdrop-blur-2xl border-b border-[#E8E2D8] p-6 flex flex-col gap-6 md:hidden shadow-xl"
           >
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
@@ -116,18 +116,18 @@ export const Navbar: React.FC = () => {
                     e.preventDefault()
                     handleLinkClick(link.href)
                   }}
-                  className="font-heading text-base font-medium text-brand-muted hover:text-brand-ivory transition-colors"
+                  className="font-heading text-base font-medium text-[#5A687A] hover:text-[#1C242E] transition-colors"
                 >
                   {link.name}
                 </a>
               ))}
             </div>
 
-            <div className="h-px bg-white/[0.06]" />
+            <div className="h-px bg-[#E8E2D8]" />
 
             <button
               onClick={() => handleLinkClick('#appointment')}
-              className="w-full py-3 rounded-xl bg-white text-slate-950 font-heading font-bold text-sm tracking-wide shadow-lg transition-transform active:scale-98"
+              className="w-full py-3 rounded-xl bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-sm tracking-wide shadow-md transition-transform active:scale-98 cursor-pointer"
             >
               Book Appointment
             </button>

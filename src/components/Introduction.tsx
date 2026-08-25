@@ -2,17 +2,17 @@ import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Premium inline SVG icons — minimal, medical, consistent with dark theme
+   Premium inline SVG icons — minimal, medical, consistent with warm light theme
 ───────────────────────────────────────────────────────────────────────────── */
 
 const IconHospitalNetwork = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="6" y="1" width="10" height="20" rx="1.5" stroke="currentColor" strokeWidth="1.4" fill="none"/>
     <rect x="1" y="7" width="20" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4" fill="none"/>
-    <rect x="9.5" y="3.5" width="3" height="3" rx="0.5" fill="currentColor" opacity="0.5"/>
-    <rect x="9.5" y="15.5" width="3" height="3" rx="0.5" fill="currentColor" opacity="0.5"/>
-    <rect x="3.5" y="10" width="3.5" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
-    <rect x="15" y="10" width="3.5" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+    <rect x="9.5" y="3.5" width="3" height="3" rx="0.5" fill="currentColor" opacity="0.6"/>
+    <rect x="9.5" y="15.5" width="3" height="3" rx="0.5" fill="currentColor" opacity="0.6"/>
+    <rect x="3.5" y="10" width="3.5" height="2" rx="0.5" fill="currentColor" opacity="0.6"/>
+    <rect x="15" y="10" width="3.5" height="2" rx="0.5" fill="currentColor" opacity="0.6"/>
   </svg>
 )
 
@@ -34,8 +34,8 @@ const IconVision = () => (
       stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinejoin="round"/>
     <circle cx="11" cy="11" r="3.4" stroke="currentColor" strokeWidth="1.4"/>
     <circle cx="11" cy="11" r="1.2" fill="currentColor"/>
-    <line x1="14" y1="7.5" x2="15.5" y2="6" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.55"/>
-    <line x1="8.5" y1="7" x2="7.2" y2="5.8" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.38"/>
+    <line x1="14" y1="7.5" x2="15.5" y2="6" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.6"/>
+    <line x1="8.5" y1="7" x2="7.2" y2="5.8" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.4"/>
   </svg>
 )
 
@@ -108,7 +108,7 @@ export const Introduction: React.FC = () => {
   return (
     <section
       id="about"
-      className="bg-[#050912] pt-8 pb-20 md:py-36 text-brand-ivory font-sans border-b border-white/[0.06] relative"
+      className="bg-[#FFFFFF] pt-14 pb-20 md:py-36 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         {/* Section Header — Editorial two-column: text left, hospital image right */}
@@ -121,16 +121,16 @@ export const Introduction: React.FC = () => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-7 flex flex-col"
           >
-            <span className="text-[12px] font-heading font-medium tracking-[0.25em] uppercase text-cyan-400 mb-4 block">
+            <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-4 block">
               About Dr. Sheila Eye Hospitals
             </span>
-            <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-white tracking-[-0.03em] leading-[1.15] mb-6">
+            <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.15] mb-6">
               Dedicated ophthalmic expertise rooted in genuine patient care.
             </h2>
-            <p className="text-brand-muted text-base sm:text-lg leading-relaxed font-normal mb-4">
+            <p className="text-[#5A687A] text-base sm:text-lg leading-relaxed font-normal mb-4">
               Established to provide dependable ophthalmic care across the north-coastal region of Andhra Pradesh, Dr. Sheila&#39;s Eye Hospitals operates specialized outpatient clinics in Sompeta and Ichapuram alongside a centralized microsurgical hospital in Palasa.
             </p>
-            <p className="text-sm text-brand-subtle leading-relaxed">
+            <p className="text-sm text-[#8A96A6] leading-relaxed">
               Committed to preserving and restoring visual clarity through experienced surgeons, modern ophthalmic diagnostics, and community-wide public eye health initiatives.
             </p>
           </motion.div>
@@ -143,18 +143,18 @@ export const Introduction: React.FC = () => {
             transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-5"
           >
-            <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] shadow-2xl aspect-[3/4] group">
+            <div className="relative rounded-2xl overflow-hidden border border-[#E8E2D8] shadow-[0_8px_30px_rgba(28,36,46,0.06)] aspect-[3/4] group">
               <img
                 src="/optimized/clinics/palasa/SPD_6977.webp"
                 alt="Dr. Sheila's Eye Hospital — Palasa Main Center, front view"
                 className="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-700"
                 loading="lazy"
               />
-              {/* Premium dark vignette */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050912]/75 via-[#050912]/10 to-transparent pointer-events-none" />
+              {/* Subtle light gradient vignette */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/70 via-transparent to-transparent pointer-events-none" />
               {/* Caption badge */}
               <div className="absolute bottom-5 left-5 right-5">
-                <span className="inline-block px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-[11px] font-heading font-medium tracking-widest uppercase text-white/80">
+                <span className="inline-block px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-[11px] font-heading font-semibold tracking-wider uppercase text-[#1C242E] shadow-sm">
                   Dr. Sheila&#39;s Eye Hospital · Palasa
                 </span>
               </div>
@@ -173,22 +173,22 @@ export const Introduction: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.7, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="p-7 rounded-2xl bg-[#07111D] border border-white/[0.06] hover:border-cyan-500/30 transition-all duration-300 flex flex-col justify-between group shadow-xl"
+                className="p-7 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 flex flex-col justify-between group shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)]"
               >
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6 group-hover:bg-cyan-400 group-hover:text-slate-950 transition-all duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D] mb-6 group-hover:bg-[#BE185D] group-hover:text-white transition-all duration-300">
                     <Icon />
                   </div>
 
-                  <span className="text-[11px] font-heading font-semibold uppercase tracking-widest text-cyan-400/80 mb-2 block">
+                  <span className="text-[11px] font-heading font-semibold uppercase tracking-widest text-[#BE185D] mb-2 block">
                     {pillar.label}
                   </span>
 
-                  <h3 className="font-heading font-bold text-xl text-white tracking-tight mb-3">
+                  <h3 className="font-heading font-bold text-xl text-[#1C242E] tracking-tight mb-3">
                     {pillar.title}
                   </h3>
 
-                  <p className="text-brand-muted text-sm leading-relaxed font-normal">
+                  <p className="text-[#5A687A] text-sm leading-relaxed font-normal">
                     {pillar.description}
                   </p>
                 </div>
@@ -220,17 +220,17 @@ export const Introduction: React.FC = () => {
                   const { Icon } = pillar
                   return (
                     <div key={idx} className="w-full shrink-0">
-                      <div className="p-7 rounded-2xl bg-[#07111D] border border-white/[0.06] flex flex-col shadow-xl min-h-[210px]">
-                        <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-5">
+                      <div className="p-7 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D8] flex flex-col shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] min-h-[210px]">
+                        <div className="w-12 h-12 rounded-xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D] mb-5">
                           <Icon />
                         </div>
-                        <span className="text-[11px] font-heading font-semibold uppercase tracking-widest text-cyan-400/80 mb-2 block">
+                        <span className="text-[11px] font-heading font-semibold uppercase tracking-widest text-[#BE185D] mb-2 block">
                           {pillar.label}
                         </span>
-                        <h3 className="font-heading font-bold text-xl text-white tracking-tight mb-3">
+                        <h3 className="font-heading font-bold text-xl text-[#1C242E] tracking-tight mb-3">
                           {pillar.title}
                         </h3>
-                        <p className="text-brand-muted text-sm leading-relaxed font-normal">
+                        <p className="text-[#5A687A] text-sm leading-relaxed font-normal">
                           {pillar.description}
                         </p>
                       </div>
@@ -252,8 +252,8 @@ export const Introduction: React.FC = () => {
                   <span
                     className={`block rounded-full transition-all duration-300 ${
                       activeIndex === idx
-                        ? 'w-5 h-1.5 bg-cyan-400'
-                        : 'w-1.5 h-1.5 bg-white/25 hover:bg-white/45'
+                        ? 'w-5 h-1.5 bg-[#BE185D]'
+                        : 'w-1.5 h-1.5 bg-stone-300 hover:bg-stone-400'
                     }`}
                   />
                 </button>
@@ -262,7 +262,6 @@ export const Introduction: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Three Regional Centers strip intentionally removed */}
       </div>
     </section>
   )

@@ -1,17 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand-base: #050912;
-  --color-brand-surface: #07111D;
-  --color-brand-surface-light: #0d1a2d;
-  --color-brand-card: #0a1424;
-  --color-brand-ivory: #F5F7FA;
-  --color-brand-muted: #A8B3C2;
-  --color-brand-subtle: #4b5a6d;
-  --color-brand-blue: #0284c7;
-  --color-brand-cyan: #38bdf8;
-  --color-brand-amber: #f59e0b;
+  --color-brand-base: #FAF8F5;
+  --color-brand-surface: #FFFFFF;
+  --color-brand-surface-light: #F4F0EA;
+  --color-brand-card: #FFFFFF;
+  --color-brand-dark: #1C242E;
+  --color-brand-charcoal: #161E28;
+  --color-brand-muted: #5A687A;
+  --color-brand-subtle: #8A96A6;
+  --color-brand-rose: #BE185D;
+  --color-brand-rose-dark: #9F1239;
+  --color-brand-rose-light: #FDF2F4;
+  --color-brand-rose-border: #FCE7F3;
+  --color-brand-border: #E8E2D8;
+  --color-brand-border-subtle: #F0ECE4;
   --font-heading: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -19,8 +23,8 @@
 /* Base resets and scrollbars */
 html,
 body {
-  background-color: #050912;
-  color: #F5F7FA;
+  background-color: #FAF8F5;
+  color: #1C242E;
   font-family: var(--font-sans);
   overflow-x: hidden;
   margin: 0;
@@ -33,36 +37,40 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   letter-spacing: -0.025em;
+  color: #1C242E;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #050912;
+  background: #F4F0EA;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1a273a;
-  border-radius: 3px;
+  background: #D1D5DB;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0284c7;
+  background: #BE185D;
 }
 
-/* Subtle editorial blur */
-.editorial-glass {
-  background: rgba(7, 17, 29, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+/* Editorial card & surface helpers */
+.warm-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E8E2D8;
+  box-shadow: 0 4px 20px -2px rgba(28, 36, 46, 0.03), 0 2px 6px -1px rgba(28, 36, 46, 0.02);
 }
 
-.editorial-card {
-  background: #07111D;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.warm-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.warm-card-hover:hover {
+  border-color: #BE185D;
+  box-shadow: 0 12px 30px -4px rgba(190, 24, 93, 0.08), 0 4px 12px -2px rgba(28, 36, 46, 0.03);
 }
 
 /* Reduced motion preference */

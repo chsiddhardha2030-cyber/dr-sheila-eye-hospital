@@ -15,7 +15,7 @@ import { AIChatbot } from './components/AIChatbot'
 
 function App() {
   return (
-    <div className="min-h-screen bg-[#050912] text-[#F5F7FA] font-sans selection:bg-cyan-500/20 selection:text-white">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1C242E] font-sans selection:bg-rose-500/20 selection:text-[#BE185D]">
       {/* Ultra-Minimal Floating Navbar with 7 Defined Links & Book CTA */}
       <Navbar />
 
