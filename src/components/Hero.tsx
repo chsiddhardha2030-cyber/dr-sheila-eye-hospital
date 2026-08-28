@@ -22,7 +22,7 @@ export const Hero: React.FC = () => {
         className="absolute inset-0 w-full h-full object-cover hidden md:block"
         src="/Images/16-9-eye-exploded-2.mp4"
         autoPlay
-        muted
+        muted 
         loop
         playsInline
         aria-hidden="true"
