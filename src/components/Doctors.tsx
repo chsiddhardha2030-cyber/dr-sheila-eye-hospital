@@ -42,8 +42,8 @@ export const Doctors: React.FC = () => {
           </p>
         </div>
 
-        {/* Compact & Elegant Doctor Presentation with Small Circular Portraits */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
+        {/* Prominent & Elegant Doctor Presentation with Circular Portraits */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 max-w-6xl mx-auto">
           {staticDoctors.map((staticDoc, index) => {
             // Match with dynamic Supabase record
             const dbDoc = dbDoctors.find((d) =>
@@ -70,23 +70,23 @@ export const Doctors: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.7, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)] group flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left relative overflow-hidden"
+                className="p-6 sm:p-8 rounded-2xl bg-white border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)] group flex flex-col sm:flex-row items-center sm:items-start gap-6 lg:gap-7 text-center sm:text-left relative overflow-hidden"
               >
                 {/* Subtle top accent gradient */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BE185D]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                {/* Small Clean Circular Portrait */}
+                {/* Prominent Circular Portrait */}
                 <div className="relative shrink-0">
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-br from-stone-200 via-rose-100 to-stone-100 group-hover:from-rose-400 group-hover:to-[#BE185D] transition-all duration-500 shadow-md">
+                  <div className="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full p-1.5 bg-gradient-to-br from-stone-200 via-rose-100 to-stone-100 group-hover:from-rose-400 group-hover:to-[#BE185D] transition-all duration-500 shadow-md">
                     <img
                       src={staticDoc.image}
                       alt={staticDoc.alt}
-                      className="w-full h-full rounded-full object-cover grayscale-[10%] group-hover:grayscale-0 transition-all duration-500"
+                      className="w-full h-full rounded-full object-cover object-top grayscale-[8%] group-hover:grayscale-0 transition-all duration-500"
                       loading="lazy"
                     />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border border-rose-200 flex items-center justify-center text-[#BE185D] shadow-sm">
-                    <Stethoscope size={13} />
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white border border-rose-200 flex items-center justify-center text-[#BE185D] shadow-sm">
+                    <Stethoscope size={15} />
                   </div>
                 </div>
 

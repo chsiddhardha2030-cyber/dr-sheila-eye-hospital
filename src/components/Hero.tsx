@@ -1,8 +1,34 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
+import { useHospitalData } from '../context/HospitalDataContext'
 
 export const Hero: React.FC = () => {
+  const { branches } = useHospitalData()
+
+  const defaultBranches = [
+    { name: 'Palasa', defaultHours: '09:00 AM – 05:00 PM' },
+    { name: 'Sompeta', defaultHours: '10:00 AM – 10:00 PM' },
+    { name: 'Ichapuram', defaultHours: '09:00 AM – 05:00 PM' },
+  ]
+
+  const branchTimings = defaultBranches.map((def) => {
+    const dbBranch = branches.find(
+      (b) => b.name.toLowerCase() === def.name.toLowerCase()
+    )
+    const isOpen = dbBranch ? dbBranch.is_open : true
+    const timing =
+      dbBranch && dbBranch.opening_time && dbBranch.closing_time
+        ? `${dbBranch.opening_time} – ${dbBranch.closing_time}`
+        : def.defaultHours
+
+    return {
+      name: def.name,
+      timing,
+      isOpen,
+    }
+  })
+
   const scrollTo = (id: string) => {
     const element = document.querySelector(id)
     if (element) {
@@ -13,8 +39,7 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="hero"
-      className="relative w-full min-h-[580px] pt-32 pb-20 md:py-36 text-[#1C242E] font-sans flex items-center overflow-hidden"
-      style={{ minHeight: '580px' }}
+      className="relative w-full min-h-[620px] pt-32 pb-16 md:pt-36 md:pb-24 text-[#1C242E] font-sans flex items-center overflow-hidden"
     >
       {/* ── Video Background Layer ─────────────────────────────────── */}
       {/* Desktop: 16:9 video (hidden on mobile) */}
@@ -48,7 +73,7 @@ export const Hero: React.FC = () => {
         style={{
           zIndex: 1,
           background:
-            'linear-gradient(to right, rgba(250,248,245,0.88) 0%, rgba(250,248,245,0.72) 45%, rgba(250,248,245,0.10) 75%, rgba(250,248,245,0.0) 100%)',
+            'linear-gradient(to right, rgba(250,248,245,0.92) 0%, rgba(250,248,245,0.80) 45%, rgba(250,248,245,0.15) 75%, rgba(250,248,245,0.0) 100%)',
         }}
       />
       {/* Subtle bottom fade for smooth section transition */}
@@ -64,6 +89,39 @@ export const Hero: React.FC = () => {
       {/* ── Hero Content Layer ─────────────────────────────────────── */}
       <div className="relative z-20 max-w-7xl w-full mx-auto px-6 md:px-12 flex flex-col justify-center h-full">
         <div className="max-w-3xl flex flex-col items-start">
+
+          {/* ── Dynamic Branch Timing Pills (Above Hero Heading) ────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+            className="flex flex-col items-start gap-2 mb-6 sm:mb-8"
+          >
+            {branchTimings.map((b) => (
+              <div
+                key={b.name}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#E8E2D8] shadow-[0_2px_8px_rgba(28,36,46,0.04)] text-xs sm:text-[13px]"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full shrink-0 ${
+                    b.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-400'
+                  }`}
+                />
+                <span className="font-heading font-bold text-[#1C242E]">
+                  {b.name}:
+                </span>
+                {b.isOpen ? (
+                  <span className="text-[#5A687A] font-medium">
+                    Open today &bull; <strong className="text-[#1C242E] font-semibold">{b.timing}</strong>
+                  </span>
+                ) : (
+                  <span className="text-rose-600 font-medium">
+                    Closed today
+                  </span>
+                )}
+              </div>
+            ))}
+          </motion.div>
 
           {/* Large Confident Display Headline (Manrope) */}
           <motion.h1
@@ -81,7 +139,7 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-            className="text-[#5A687A] text-lg sm:text-xl font-normal leading-relaxed max-w-lg mb-11"
+            className="text-[#5A687A] text-lg sm:text-xl font-normal leading-relaxed max-w-lg mb-9"
           >
             Advanced eye care with expertise, technology and compassion.
           </motion.p>

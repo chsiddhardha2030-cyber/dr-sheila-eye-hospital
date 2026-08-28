@@ -90,13 +90,6 @@ export const Clinics: React.FC = () => {
   const displayPhone = currentDbBranch?.whatsapp_number || current.phone
   const displayPhoneHref = `tel:${displayPhone.replace(/\D/g, '')}`
 
-  const scrollToAppointment = () => {
-    const element = document.querySelector('#appointment')
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
   const handleDirectionsClick = (branch: ClinicBranch) => {
     if (branch.id === 'ichapuram' || !branch.mapUrl) {
       setShowIchapuramModal(true)
@@ -182,6 +175,15 @@ export const Clinics: React.FC = () => {
                 </span>
               </div>
 
+              {/* OPD Timings from Supabase — Located ABOVE Branch Information & Image */}
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-stone-700 mb-4 bg-stone-50 px-3 py-1.5 rounded-xl border border-[#E8E2D8]/80">
+                <Clock size={15} className="text-[#BE185D] shrink-0" />
+                <span className="text-[#5A687A]">Consultation Hours:</span>
+                <strong className="text-[#1C242E]">
+                  {isOpen ? `${openingTime} – ${closingTime}` : 'Currently Closed'}
+                </strong>
+              </div>
+
               <h3 className="font-heading font-bold text-2xl sm:text-4xl text-[#1C242E] tracking-tight leading-tight mb-3">
                 {current.name}
               </h3>
@@ -192,20 +194,8 @@ export const Clinics: React.FC = () => {
 
               <div className="w-full h-px bg-[#E8E2D8] mb-6" />
 
-              {/* Address, Timings & Emergency Info */}
+              {/* Address & Emergency Info */}
               <div className="flex flex-col gap-4 mb-8 w-full text-sm">
-                
-                {/* OPD Timings from Supabase */}
-                <div className="flex items-center gap-3 text-stone-700">
-                  <Clock size={18} className="text-[#BE185D] shrink-0" />
-                  <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <span className="text-[#5A687A]">Consultation Hours:</span>
-                    <strong className="text-[#1C242E]">
-                      {isOpen ? `${openingTime} – ${closingTime}` : 'Currently Closed'}
-                    </strong>
-                  </div>
-                </div>
-
                 <div className="flex items-start gap-3 text-stone-700">
                   <MapPin size={18} className="text-[#BE185D] shrink-0 mt-1" />
                   <div className="flex flex-col leading-relaxed">
@@ -219,11 +209,23 @@ export const Clinics: React.FC = () => {
                   <Phone size={16} className="text-[#BE185D] shrink-0 mt-0.5" />
                   <div className="flex flex-col gap-1">
                     <span className="text-stone-700">
-                      Emergency / Reception: <strong className="text-[#1C242E]">{displayPhone}</strong>
+                      Emergency / Reception:{' '}
+                      <a
+                        href={displayPhoneHref}
+                        className="text-[#1C242E] font-bold hover:text-[#BE185D] transition-colors underline decoration-[#E8E2D8] hover:decoration-[#BE185D] underline-offset-2"
+                      >
+                        {displayPhone}
+                      </a>
                     </span>
                     {current.opticals && (
                       <span className="text-stone-700">
-                        Opticals: <strong className="text-[#1C242E]">{current.opticals}</strong>
+                        Opticals:{' '}
+                        <a
+                          href={current.opticalsHref}
+                          className="text-[#1C242E] font-bold hover:text-[#BE185D] transition-colors underline decoration-[#E8E2D8] hover:decoration-[#BE185D] underline-offset-2"
+                        >
+                          {current.opticals}
+                        </a>
                       </span>
                     )}
                   </div>
@@ -239,13 +241,6 @@ export const Clinics: React.FC = () => {
                   <PhoneCall size={14} />
                   <span>Call Now</span>
                 </a>
-
-                <button
-                  onClick={scrollToAppointment}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-white hover:bg-stone-50 text-[#1C242E] font-heading font-bold text-xs uppercase tracking-wider border border-[#E8E2D8] transition-all duration-300 shadow-xs cursor-pointer"
-                >
-                  Book for this Branch
-                </button>
 
                 <button
                   onClick={() => handleDirectionsClick(current)}

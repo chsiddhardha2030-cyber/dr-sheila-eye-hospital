@@ -24,9 +24,9 @@ export const Gallery: React.FC = () => {
   const touchStartX = useRef<number | null>(null)
   const touchEndX = useRef<number | null>(null)
 
-  // 13 All High-Resolution Branch Facility Photographs
+  // 30 All High-Resolution Branch Facility Photographs (10 per branch)
   const galleryItems: GalleryItem[] = [
-    // Palasa Center (5 images)
+    // Palasa Center (10 images)
     {
       id: 'palasa-1',
       src: '/optimized/clinics/palasa/DSC_8211.webp',
@@ -58,16 +58,51 @@ export const Gallery: React.FC = () => {
     {
       id: 'palasa-5',
       src: '/optimized/clinics/palasa/SPD_6977.webp',
-      title: 'Main Hospital Building',
+      title: 'Main Hospital Building & Entrance',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
+    },
+    {
+      id: 'palasa-6',
+      src: '/optimized/clinics/palasa/DSC_8215.webp',
+      title: 'Advanced Biomicroscopy Station',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
+    },
+    {
+      id: 'palasa-7',
+      src: '/optimized/clinics/palasa/DSC_8228.webp',
+      title: 'Refraction & Vision Testing Chamber',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
+    },
+    {
+      id: 'palasa-8',
+      src: '/optimized/clinics/palasa/DSC_8251.webp',
+      title: 'Outpatient Examination Room',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
+    },
+    {
+      id: 'palasa-9',
+      src: '/optimized/clinics/palasa/DSC_8265.webp',
+      title: 'Sterile Microsurgical Preparation Area',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
+    },
+    {
+      id: 'palasa-10',
+      src: '/optimized/clinics/palasa/DSC_8300.webp',
+      title: 'Post-Operative Recovery Care Unit',
       branch: 'Palasa Center',
       branchId: 'palasa',
     },
 
-    // Sompeta Branch (4 images)
+    // Sompeta Branch (10 images)
     {
       id: 'sompeta-1',
       src: '/optimized/clinics/sompeta/DSC_8324.webp',
-      title: 'Clinic Reception & Waiting',
+      title: 'Clinic Reception & Waiting Lounge',
       branch: 'Sompeta Branch',
       branchId: 'sompeta',
     },
@@ -81,7 +116,7 @@ export const Gallery: React.FC = () => {
     {
       id: 'sompeta-3',
       src: '/optimized/clinics/sompeta/DSC_8332.webp',
-      title: 'Slit Lamp Biomicroscopy',
+      title: 'Slit Lamp Biomicroscopy Unit',
       branch: 'Sompeta Branch',
       branchId: 'sompeta',
     },
@@ -92,12 +127,54 @@ export const Gallery: React.FC = () => {
       branch: 'Sompeta Branch',
       branchId: 'sompeta',
     },
+    {
+      id: 'sompeta-5',
+      src: '/optimized/clinics/sompeta/DSC_8326.webp',
+      title: 'Refraction & Vision Testing Station',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+    {
+      id: 'sompeta-6',
+      src: '/optimized/clinics/sompeta/DSC_8327.webp',
+      title: 'Patient Diagnostic Station',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+    {
+      id: 'sompeta-7',
+      src: '/optimized/clinics/sompeta/DSC_8333.webp',
+      title: 'Comprehensive Eye Examination Suite',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+    {
+      id: 'sompeta-8',
+      src: '/optimized/clinics/sompeta/DSC_8340.webp',
+      title: 'Clinical Consultation Suite',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+    {
+      id: 'sompeta-9',
+      src: '/optimized/clinics/sompeta/DSC_8342.webp',
+      title: 'Ophthalmic Examination Room',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+    {
+      id: 'sompeta-10',
+      src: '/optimized/clinics/sompeta/DSC_8350.webp',
+      title: 'Diagnostic Equipment Suite',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
 
-    // Ichapuram Branch (4 images)
+    // Ichapuram Branch (10 images)
     {
       id: 'ichapuram-1',
       src: '/optimized/clinics/ichapuram/DSC_8512.webp',
-      title: 'Ichapuram Clinic Entrance',
+      title: 'Ichapuram Clinic Entrance & Reception',
       branch: 'Ichapuram Branch',
       branchId: 'ichapuram',
     },
@@ -119,6 +196,48 @@ export const Gallery: React.FC = () => {
       id: 'ichapuram-4',
       src: '/optimized/clinics/ichapuram/DSC_8535.webp',
       title: 'Optical & Service Desk',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-5',
+      src: '/optimized/clinics/ichapuram/DSC_8513.webp',
+      title: 'Outpatient Consultation Room',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-6',
+      src: '/optimized/clinics/ichapuram/DSC_8515.webp',
+      title: 'Slit Lamp Examination Unit',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-7',
+      src: '/optimized/clinics/ichapuram/DSC_8516.webp',
+      title: 'Patient Waiting & Reception Desk',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-8',
+      src: '/optimized/clinics/ichapuram/DSC_8524.webp',
+      title: 'Clinical Vision Testing Chamber',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-9',
+      src: '/optimized/clinics/ichapuram/DSC_8525.webp',
+      title: 'Diagnostic Equipment Station',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-10',
+      src: '/optimized/clinics/ichapuram/DSC_8530.webp',
+      title: 'Comprehensive Eye Testing Station',
       branch: 'Ichapuram Branch',
       branchId: 'ichapuram',
     },
@@ -329,27 +448,14 @@ export const Gallery: React.FC = () => {
                   {/* Photo */}
                   <img
                     src={item.src}
-                    alt={item.title}
+                    alt={item.branch}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
                   />
 
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/90 via-[#1C242E]/30 to-transparent pointer-events-none" />
-
                   {/* Subtle Zoom Badge */}
-                  <div className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/85 backdrop-blur-md border border-white/70 flex items-center justify-center text-[#1C242E] group-hover:text-[#BE185D] group-hover:scale-110 transition-all duration-300 shadow-xs">
+                  <div className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/85 backdrop-blur-md border border-white/70 flex items-center justify-center text-[#1C242E] group-hover:text-[#BE185D] group-hover:scale-110 transition-all duration-300 shadow-xs z-10">
                     <Maximize2 size={13} />
-                  </div>
-
-                  {/* Clean, Short Title & Branch Label */}
-                  <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5">
-                    <span className="text-[10px] sm:text-[11px] font-heading font-semibold uppercase tracking-wider text-rose-200 block mb-1">
-                      {item.branch}
-                    </span>
-                    <h3 className="font-heading font-bold text-base sm:text-lg text-white leading-snug line-clamp-1">
-                      {item.title}
-                    </h3>
                   </div>
                 </div>
               </div>
@@ -449,18 +555,15 @@ export const Gallery: React.FC = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.25 }}
                   src={currentImages[lightboxIdx].src}
-                  alt={currentImages[lightboxIdx].title}
-                  className="max-w-[92vw] sm:max-w-4xl max-h-[70vh] object-contain rounded-2xl border border-white/15 shadow-2xl"
+                  alt={currentImages[lightboxIdx].branch}
+                  className="max-w-[92vw] sm:max-w-4xl max-h-[75vh] object-contain rounded-2xl border border-white/15 shadow-2xl"
                 />
 
-                {/* Caption & Branch Info */}
+                {/* Branch & Photo Counter */}
                 <div className="text-center mt-5">
-                  <span className="text-rose-300 text-xs font-heading font-semibold uppercase tracking-wider block mb-1">
+                  <span className="text-rose-300 text-xs font-heading font-semibold uppercase tracking-wider block">
                     {currentImages[lightboxIdx].branch} &bull; Image {lightboxIdx + 1} of {currentImages.length}
                   </span>
-                  <h4 className="font-heading font-bold text-lg sm:text-xl text-white">
-                    {currentImages[lightboxIdx].title}
-                  </h4>
                 </div>
 
                 {/* Mobile Navigation inside Lightbox */}
@@ -512,3 +615,4 @@ export const Gallery: React.FC = () => {
     </section>
   )
 }
+

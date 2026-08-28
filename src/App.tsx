@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { Navbar } from './components/Navbar'
-import { BranchStatusBar } from './components/BranchStatusBar'
 import { Hero } from './components/Hero'
 import { Doctors } from './components/Doctors'
 import { Introduction } from './components/Introduction'
@@ -58,9 +57,6 @@ function MainContent() {
     <div className="min-h-screen bg-[#FAF8F5] text-[#1C242E] font-sans selection:bg-rose-500/20 selection:text-[#BE185D]">
       {/* Ultra-Minimal Floating Navbar with 7 Defined Links & Book CTA */}
       <Navbar />
-
-      {/* Top Branch-Status Area: positioned directly below Navbar and above Hero */}
-      <BranchStatusBar />
 
       {/* 1. Full-Bleed Video Background Hero */}
       <Hero />
