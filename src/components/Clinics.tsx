@@ -58,7 +58,7 @@ export const Clinics: React.FC = () => {
       phoneHref: 'tel:08947234108',
       mapUrl: 'https://maps.app.goo.gl/tdYQZC4L9GYhPY3R6',
       surgical: false,
-      image: '/optimized/clinics/sompeta/Sompeta-branch-collab.png',
+      image: '/optimized/clinics/sompeta/Sompeta-full-strength-squad.jpeg',
     },
     {
       id: 'ichapuram',
