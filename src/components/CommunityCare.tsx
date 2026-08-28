@@ -44,7 +44,7 @@ export const CommunityCare: React.FC = () => {
         'Our team detects uncorrected refractive errors, amblyopia (lazy eye), and pediatric ocular conditions early to safeguard children’s learning ability and educational growth.',
       icon: GraduationCap,
       impact: 'Early vision triage & corrective spectacle distribution in schools',
-      image: '/optimized/clinics/sompeta/DSC_8324.webp',
+      image: '/optimized/clinics/sompeta/School(1).png',
       imageCaption: 'School Screening Initiative & Pediatric Triage',
     },
     {
@@ -57,7 +57,7 @@ export const CommunityCare: React.FC = () => {
         'Because diabetic eye changes can progress painlessly until sight is compromised, our proactive screenings ensure timely laser intervention and medical guidance before irreversible damage occurs.',
       icon: Sparkles,
       impact: 'Proactive fundus imaging & timely retinal referrals',
-      image: '/optimized/clinics/palasa/DSC_8224.webp',
+      image: '/optimized/clinics/sompeta/DSC_9999.jpeg',
       imageCaption: 'Retinal Diagnostics & Fundus Evaluation Camp',
     },
     {
@@ -70,7 +70,7 @@ export const CommunityCare: React.FC = () => {
         'We bring diagnostic equipment, optometrists, and medical staff into communities to provide free vision testing, cataract triage, medication distribution, and structured referrals to our Palasa surgical hospital.',
       icon: MapPin,
       impact: 'Community triage, free consultations & direct surgical pathways',
-      image: '/optimized/clinics/ichapuram/DSC_8512.webp',
+      image: '/optimized/clinics/ichapuram/DSC_8324.JPG',
       imageCaption: 'Rural Screening Camp & Surgical Referrals',
     },
   ]

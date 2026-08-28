@@ -28,7 +28,7 @@ export const AIChatbot: React.FC = () => {
     const q = input.toLowerCase()
 
     if (q.includes('doctor') || q.includes('surgeon') || q.includes('sheila') || q.includes('tridib')) {
-      return 'Dr. Sheila Eye Hospitals is led by our ophthalmic surgeons:\n• Dr. Sheila Thangaraj (MBBS, DO) — Ophthalmic Surgeon & Medical Director\n• Dr. Tridib Gogoi (MBBS, DO) — Ophthalmic Surgeon'
+      return 'Dr. Sheila Eye Hospitals is led by our ophthalmic surgeons:\n• Dr. Sheila Thangaraj (MBBS, DO) — Ophthalmic Surgeon & CEO\n• Dr. Tridib Gogoi (MBBS, DO) — Ophthalmic Surgeon & Medical Director'
     }
 
     if (q.includes('branch') || q.includes('clinic') || q.includes('location') || q.includes('where') || q.includes('address')) {

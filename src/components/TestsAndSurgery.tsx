@@ -54,7 +54,7 @@ export const TestsAndSurgery: React.FC = () => {
       palasaOnly: false,
       scopeBadge: 'All Regional Centers',
       facilityCount: '6 Diagnostic Tests',
-      image: '/optimized/clinics/palasa/DSC_8224.webp',
+      image: '/optimized/clinics/sompeta/DSC_9999.jpeg',
       imageCaption: 'Advanced Ophthalmic Diagnostic Suite',
       items: [
         {
@@ -101,7 +101,7 @@ export const TestsAndSurgery: React.FC = () => {
       palasaOnly: false,
       scopeBadge: 'Outpatient Laser Care',
       facilityCount: '3 Laser Procedures',
-      image: '/optimized/clinics/sompeta/DSC_8325.webp',
+      image: '/optimized/clinics/palasa/IMG_0820.jpeg',
       imageCaption: 'Nd:YAG Precision Laser System',
       items: [
         {
@@ -133,7 +133,7 @@ export const TestsAndSurgery: React.FC = () => {
       palasaOnly: true,
       scopeBadge: 'Palasa Hospital Only',
       facilityCount: '4 Surgical Specialties',
-      image: '/optimized/clinics/palasa/DSC_8279.webp',
+      image: '/optimized/clinics/palasa/IMG_0815.jpeg',
       imageCaption: 'Microsurgical Suite & Cataract Care',
       items: [
         {

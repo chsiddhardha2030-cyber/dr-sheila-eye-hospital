@@ -145,7 +145,7 @@ export const Introduction: React.FC = () => {
           >
             <div className="relative rounded-2xl overflow-hidden border border-[#E8E2D8] shadow-[0_8px_30px_rgba(28,36,46,0.06)] aspect-[3/4] group">
               <img
-                src="/optimized/clinics/palasa/SPD_6977.webp"
+                src="/optimized/clinics/palasa/Combined-picture-of-all-branches(1).png"
                 alt="Dr. Sheila's Eye Hospital — Palasa Main Center, front view"
                 className="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-700"
                 loading="lazy"

@@ -1,136 +1,186 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react'
 
-interface BranchGalleryItem {
+interface GalleryItem {
+  id: string
   src: string
   title: string
-  subtitle: string
+  branch: string
+  branchId: 'palasa' | 'sompeta' | 'ichapuram'
 }
 
-interface BranchGallery {
-  id: string
-  name: string
-  tag: string
-  description: string
-  images: BranchGalleryItem[]
+interface FilterTab {
+  id: 'all' | 'palasa' | 'sompeta' | 'ichapuram'
+  label: string
 }
 
 export const Gallery: React.FC = () => {
-  const [activeBranchId, setActiveBranchId] = useState<string>('palasa')
-  const [mobileSlideIdx, setMobileSlideIdx] = useState<number>(0)
+  const [activeFilter, setActiveFilter] = useState<'all' | 'palasa' | 'sompeta' | 'ichapuram'>('all')
+  const [currentIndex, setCurrentIndex] = useState<number>(0)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
+  const [itemsPerPage, setItemsPerPage] = useState<number>(3)
 
   const touchStartX = useRef<number | null>(null)
   const touchEndX = useRef<number | null>(null)
 
-  const branchGalleries: BranchGallery[] = [
+  // 13 All High-Resolution Branch Facility Photographs
+  const galleryItems: GalleryItem[] = [
+    // Palasa Center (5 images)
     {
-      id: 'palasa',
-      name: 'Palasa Center',
-      tag: 'Main Surgical Hospital',
-      description:
-        'Our primary ophthalmic hospital and microsurgical center featuring sterile operation theatres, advanced diagnostic suites, in-house pharmacy, optical center, and day-care recovery areas.',
-      images: [
-        {
-          src: '/optimized/clinics/palasa/DSC_8211.webp',
-          title: 'Consultation & Slit Lamp Suite',
-          subtitle: 'Doctor Examination & Diagnostics',
-        },
-        {
-          src: '/optimized/clinics/palasa/DSC_8279.webp',
-          title: 'Sterile Microsurgical OT',
-          subtitle: 'Phacoemulsification & Cataract Care',
-        },
-        {
-          src: '/optimized/clinics/palasa/DSC_8224.webp',
-          title: 'Ophthalmic Diagnostics Lab',
-          subtitle: 'Automated Measurement & Imaging',
-        },
-        {
-          src: '/optimized/clinics/palasa/DSC_8320.webp',
-          title: 'Reception & Patient Lounge',
-          subtitle: 'Welcoming Registration & Triage',
-        },
-        {
-          src: '/optimized/clinics/palasa/SPD_6977.webp',
-          title: 'Main Hospital Building',
-          subtitle: 'VBR Complex · Palasa',
-        },
-      ],
+      id: 'palasa-1',
+      src: '/optimized/clinics/palasa/DSC_8211.webp',
+      title: 'Consultation & Slit Lamp Suite',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
     },
     {
-      id: 'sompeta',
-      name: 'Sompeta Branch',
-      tag: 'Comprehensive Outpatient Clinic',
-      description:
-        'Modern outpatient facility providing comprehensive vision screening, slit lamp evaluations, Nd:YAG laser treatments, and prescription eyewear dispensing.',
-      images: [
-        {
-          src: '/optimized/clinics/sompeta/DSC_8324.webp',
-          title: 'Clinic Reception & Waiting',
-          subtitle: 'Patient Care & Registration',
-        },
-        {
-          src: '/optimized/clinics/sompeta/DSC_8325.webp',
-          title: 'Laser & Diagnostic Chamber',
-          subtitle: 'Nd:YAG Laser & Retinal Evaluation',
-        },
-        {
-          src: '/optimized/clinics/sompeta/DSC_8332.webp',
-          title: 'Slit Lamp Biomicroscopy',
-          subtitle: 'Anterior Segment Examination',
-        },
-        {
-          src: '/optimized/clinics/sompeta/DSC_8345.webp',
-          title: 'Doctor Consultation Chamber',
-          subtitle: 'Clinical Counseling & Care',
-        },
-      ],
+      id: 'palasa-2',
+      src: '/optimized/clinics/palasa/DSC_8279.webp',
+      title: 'Phacoemulsification & Cataract OT',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
     },
     {
-      id: 'ichapuram',
-      name: 'Ichapuram Branch',
-      tag: 'Outpatient Clinic & Community Health',
-      description:
-        'Dedicated clinical center delivering accessible eye exams, refractive vision testing, and direct surgical referral coordination for patients in northern Srikakulam.',
-      images: [
-        {
-          src: '/optimized/clinics/ichapuram/DSC_8512.webp',
-          title: 'Ichapuram Clinic Entrance',
-          subtitle: 'Outpatient Center & Triage',
-        },
-        {
-          src: '/optimized/clinics/ichapuram/DSC_8518.webp',
-          title: 'Diagnostic & Refraction Area',
-          subtitle: 'Vision Assessment & Power Checks',
-        },
-        {
-          src: '/optimized/clinics/ichapuram/DSC_8521.webp',
-          title: 'Patient Examination Station',
-          subtitle: 'Clinical Ocular Evaluation',
-        },
-        {
-          src: '/optimized/clinics/ichapuram/DSC_8535.webp',
-          title: 'Optical & Patient Service Desk',
-          subtitle: 'Eyewear & Dispensing Support',
-        },
-      ],
+      id: 'palasa-3',
+      src: '/optimized/clinics/palasa/DSC_8224.webp',
+      title: 'Ophthalmic Diagnostics Lab',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
+    },
+    {
+      id: 'palasa-4',
+      src: '/optimized/clinics/palasa/DSC_8320.webp',
+      title: 'Reception & Patient Lounge',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
+    },
+    {
+      id: 'palasa-5',
+      src: '/optimized/clinics/palasa/SPD_6977.webp',
+      title: 'Main Hospital Building',
+      branch: 'Palasa Center',
+      branchId: 'palasa',
+    },
+
+    // Sompeta Branch (4 images)
+    {
+      id: 'sompeta-1',
+      src: '/optimized/clinics/sompeta/DSC_8324.webp',
+      title: 'Clinic Reception & Waiting',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+    {
+      id: 'sompeta-2',
+      src: '/optimized/clinics/sompeta/DSC_8325.webp',
+      title: 'Laser & Diagnostic Chamber',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+    {
+      id: 'sompeta-3',
+      src: '/optimized/clinics/sompeta/DSC_8332.webp',
+      title: 'Slit Lamp Biomicroscopy',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+    {
+      id: 'sompeta-4',
+      src: '/optimized/clinics/sompeta/DSC_8345.webp',
+      title: 'Doctor Consultation Chamber',
+      branch: 'Sompeta Branch',
+      branchId: 'sompeta',
+    },
+
+    // Ichapuram Branch (4 images)
+    {
+      id: 'ichapuram-1',
+      src: '/optimized/clinics/ichapuram/DSC_8512.webp',
+      title: 'Ichapuram Clinic Entrance',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-2',
+      src: '/optimized/clinics/ichapuram/DSC_8518.webp',
+      title: 'Diagnostic & Refraction Area',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-3',
+      src: '/optimized/clinics/ichapuram/DSC_8521.webp',
+      title: 'Patient Examination Station',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
+    },
+    {
+      id: 'ichapuram-4',
+      src: '/optimized/clinics/ichapuram/DSC_8535.webp',
+      title: 'Optical & Service Desk',
+      branch: 'Ichapuram Branch',
+      branchId: 'ichapuram',
     },
   ]
 
-  const currentGallery =
-    branchGalleries.find((b) => b.id === activeBranchId) || branchGalleries[0]
-  const currentImages = currentGallery.images
-  const totalMobileSlides = currentImages.length
+  const filterTabs: FilterTab[] = [
+    { id: 'all', label: 'All Photos' },
+    { id: 'palasa', label: 'Palasa Center' },
+    { id: 'sompeta', label: 'Sompeta Branch' },
+    { id: 'ichapuram', label: 'Ichapuram Branch' },
+  ]
 
-  const handleBranchChange = (id: string) => {
-    setActiveBranchId(id)
-    setMobileSlideIdx(0)
+  // Filtered Images
+  const currentImages =
+    activeFilter === 'all'
+      ? galleryItems
+      : galleryItems.filter((item) => item.branchId === activeFilter)
+
+  // Screen-width responsive items per page calculation
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setItemsPerPage(1) // Mobile: exactly 1 card
+      } else if (window.innerWidth < 1024) {
+        setItemsPerPage(2) // Tablet: 2 cards
+      } else {
+        setItemsPerPage(3) // Desktop: 3 equal cards
+      }
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Maximum slider start index
+  const maxIndex = Math.max(0, currentImages.length - itemsPerPage)
+
+  // Ensure index stays valid when filter or window size changes
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [activeFilter])
+
+  useEffect(() => {
+    if (currentIndex > maxIndex) {
+      setCurrentIndex(maxIndex)
+    }
+  }, [maxIndex, currentIndex])
+
+  // Navigation handlers
+  const handlePrev = () => {
+    setCurrentIndex((prev) => Math.max(0, prev - 1))
   }
 
+  const handleNext = () => {
+    setCurrentIndex((prev) => Math.min(maxIndex, prev + 1))
+  }
+
+  // Touch Swipe for mobile/touch devices
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
+    touchEndX.current = null
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -140,291 +190,320 @@ export const Gallery: React.FC = () => {
   const handleTouchEnd = () => {
     if (touchStartX.current === null || touchEndX.current === null) return
     const delta = touchStartX.current - touchEndX.current
-    if (Math.abs(delta) > 35) {
+    if (Math.abs(delta) > 40) {
       if (delta > 0) {
-        setMobileSlideIdx((prev) => (prev < totalMobileSlides - 1 ? prev + 1 : 0))
+        handleNext()
       } else {
-        setMobileSlideIdx((prev) => (prev > 0 ? prev - 1 : totalMobileSlides - 1))
+        handlePrev()
       }
     }
     touchStartX.current = null
     touchEndX.current = null
   }
 
-  const handleLightboxNext = () => {
-    if (lightboxIdx === null) return
-    setLightboxIdx((lightboxIdx + 1) % currentImages.length)
-  }
+  // Lightbox Keyboard Navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (lightboxIdx === null) return
+      if (e.key === 'Escape') setLightboxIdx(null)
+      if (e.key === 'ArrowRight') {
+        setLightboxIdx((prev) => (prev !== null ? (prev + 1) % currentImages.length : null))
+      }
+      if (e.key === 'ArrowLeft') {
+        setLightboxIdx((prev) =>
+          prev !== null ? (prev - 1 + currentImages.length) % currentImages.length : null
+        )
+      }
+    }
 
-  const handleLightboxPrev = () => {
-    if (lightboxIdx === null) return
-    setLightboxIdx((lightboxIdx - 1 + currentImages.length) % currentImages.length)
-  }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [lightboxIdx, currentImages.length])
+
+  // Calculate translate percentage
+  const stepPercentage = 100 / itemsPerPage
+  const translateXValue = currentIndex * stepPercentage
 
   return (
     <section
       id="gallery"
-      className="bg-[#FAF8F5] py-24 md:py-36 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative"
+      className="bg-[#FAF8F5] py-20 md:py-32 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        {/* Section Header */}
-        <div className="max-w-3xl mb-10 md:mb-14">
-          <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-3 block">
-            Clinical Environment &amp; Facilities
-          </span>
-          <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.12] mb-4">
-            Explore Our Hospital Facilities
-          </h2>
-          <p className="text-[#5A687A] text-base sm:text-lg font-normal leading-relaxed">
-            Select a branch to view its clinical environment, diagnostic suites, and patient care areas.
-          </p>
+        {/* Section Header & Navigation Controls */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div className="max-w-2xl">
+            <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-2.5 block">
+              Clinic Gallery
+            </span>
+            <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.15] mb-3">
+              Explore Our Clinics
+            </h2>
+            <p className="text-[#5A687A] text-base sm:text-lg font-normal leading-relaxed">
+              Explore our modern consultation suites, sterile microsurgical OT, and diagnostic facilities across all three hospital locations.
+            </p>
+          </div>
+
+          {/* Desktop / Tablet Prev & Next Navigation Buttons */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              aria-label="Previous image"
+              className={`w-11 h-11 rounded-full border border-[#E8E2D8] flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs ${
+                currentIndex === 0
+                  ? 'bg-stone-100 text-stone-300 border-stone-200 cursor-not-allowed opacity-50'
+                  : 'bg-white text-[#1C242E] hover:bg-[#1C242E] hover:text-white hover:border-[#1C242E] active:scale-95'
+              }`}
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={currentIndex >= maxIndex}
+              aria-label="Next image"
+              className={`w-11 h-11 rounded-full border border-[#E8E2D8] flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs ${
+                currentIndex >= maxIndex
+                  ? 'bg-stone-100 text-stone-300 border-stone-200 cursor-not-allowed opacity-50'
+                  : 'bg-white text-[#1C242E] hover:bg-[#1C242E] hover:text-white hover:border-[#1C242E] active:scale-95'
+              }`}
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
 
-        {/* Branch Selector Tabs */}
-        <div className="flex flex-wrap items-center gap-2.5 pb-6 border-b border-[#E8E2D8] mb-8">
-          {branchGalleries.map((branch) => {
-            const isActive = branch.id === activeBranchId
+        {/* Branch Filter Tabs */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pb-6 border-b border-[#E8E2D8] mb-8 sm:mb-10">
+          {filterTabs.map((tab) => {
+            const isActive = activeFilter === tab.id
+            const count =
+              tab.id === 'all'
+                ? galleryItems.length
+                : galleryItems.filter((i) => i.branchId === tab.id).length
+
             return (
               <button
-                key={branch.id}
-                onClick={() => handleBranchChange(branch.id)}
-                className={`px-5 py-2.5 rounded-full font-heading text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
+                key={tab.id}
+                onClick={() => setActiveFilter(tab.id)}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-heading text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
                   isActive
                     ? 'bg-[#1C242E] text-white shadow-md font-bold'
                     : 'bg-white text-[#5A687A] hover:text-[#1C242E] hover:bg-stone-50 border border-[#E8E2D8]'
                 }`}
               >
-                {branch.name}
+                <span>{tab.label}</span>
+                <span
+                  className={`text-[11px] px-1.5 py-0.2 rounded-full font-sans ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-stone-100 text-[#5A687A]'
+                  }`}
+                >
+                  {count}
+                </span>
               </button>
             )
           })}
         </div>
 
-        {/* Branch Context Description */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-[#5A687A]">
-          <div>
-            <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#BE185D] block mb-1">
-              {currentGallery.tag}
-            </span>
-            <p className="text-[#5A687A] text-sm sm:text-base max-w-2xl font-normal leading-relaxed">
-              {currentGallery.description}
-            </p>
-          </div>
-          <span className="text-xs font-medium text-[#8A96A6] shrink-0">
-            {currentImages.length} Photographs Available
-          </span>
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════════════
-            DESKTOP PRESENTATION: Visually Rich Image Composition & Grid
-        ══════════════════════════════════════════════════════════════════ */}
-        <div className="hidden md:grid md:grid-cols-12 gap-5">
-          {/* Main Featured Photograph */}
+        {/* Horizontal Carousel Viewport */}
+        <div
+          className="relative overflow-hidden -mx-2.5 sm:-mx-3"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <motion.div
-            key={`desktop-main-${currentGallery.id}`}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-            onClick={() => setLightboxIdx(0)}
-            className="col-span-7 relative rounded-3xl overflow-hidden bg-white border border-[#E8E2D8] group cursor-pointer aspect-[16/11] shadow-[0_4px_20px_rgba(28,36,46,0.04)]"
+            className="flex"
+            animate={{ x: `-${translateXValue}%` }}
+            transition={{ type: 'spring', stiffness: 300, damping: 32 }}
           >
-            <img
-              src={currentImages[0].src}
-              alt={currentImages[0].title}
-              className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-700"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/75 via-transparent to-transparent pointer-events-none" />
-            
-            <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/80 backdrop-blur-md border border-white/60 flex items-center justify-center text-[#1C242E] group-hover:text-[#BE185D] group-hover:scale-110 transition-all shadow-sm">
-              <Maximize2 size={15} />
-            </div>
-
-            <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-              <div>
-                <span className="text-[11px] font-heading font-semibold uppercase tracking-widest text-rose-200 block mb-1">
-                  {currentImages[0].subtitle}
-                </span>
-                <h3 className="font-heading font-bold text-xl sm:text-2xl text-white">
-                  {currentImages[0].title}
-                </h3>
-              </div>
-              <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-xs font-heading font-semibold text-[#1C242E] shadow-sm">
-                {currentGallery.name}
-              </span>
-            </div>
-          </motion.div>
-
-          {/* Supporting Images Column / Grid */}
-          <div className="col-span-5 grid grid-cols-2 gap-5">
-            {currentImages.slice(1, 5).map((item, idx) => (
-              <motion.div
-                key={`desktop-sub-${currentGallery.id}-${idx}`}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: (idx + 1) * 0.08 }}
-                onClick={() => setLightboxIdx(idx + 1)}
-                className="relative rounded-2xl overflow-hidden bg-white border border-[#E8E2D8] group cursor-pointer aspect-square shadow-[0_4px_16px_rgba(28,36,46,0.03)]"
+            {currentImages.map((item, idx) => (
+              <div
+                key={item.id}
+                className="shrink-0 w-full sm:w-1/2 lg:w-1/3 px-2.5 sm:px-3"
               >
-                <img
-                  src={item.src}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/75 via-transparent to-transparent opacity-85 group-hover:opacity-95 transition-opacity pointer-events-none" />
-                <div className="absolute bottom-3 left-3 right-3">
-                  <span className="text-[10px] font-heading font-semibold uppercase tracking-wider text-rose-200 block">
-                    {item.subtitle}
-                  </span>
-                  <h4 className="font-heading font-bold text-xs sm:text-sm text-white truncate">
-                    {item.title}
-                  </h4>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════════════
-            MOBILE PRESENTATION: Single-Card Touch/Swipeable Carousel
-        ══════════════════════════════════════════════════════════════════ */}
-        <div className="block md:hidden">
-          <div
-            className="relative overflow-hidden"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {(() => {
-              const item = currentImages[mobileSlideIdx]
-              return (
                 <div
-                  onClick={() => setLightboxIdx(mobileSlideIdx)}
-                  className="relative rounded-3xl overflow-hidden bg-white border border-[#E8E2D8] shadow-[0_4px_20px_rgba(28,36,46,0.04)] aspect-[4/3] group cursor-pointer"
+                  onClick={() => setLightboxIdx(idx)}
+                  className="group relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#E8E2D8] shadow-[0_4px_20px_rgba(28,36,46,0.04)] hover:shadow-xl transition-all duration-500 cursor-pointer aspect-[4/3]"
                 >
+                  {/* Photo */}
                   <img
                     src={item.src}
                     alt={item.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/75 via-transparent to-transparent pointer-events-none" />
 
-                  {/* Tap to zoom hint */}
-                  <div className="absolute top-3.5 right-3.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-[10px] font-heading font-semibold text-[#1C242E] flex items-center gap-1 shadow-xs">
-                    <Maximize2 size={11} className="text-[#BE185D]" />
-                    <span>Zoom</span>
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/90 via-[#1C242E]/30 to-transparent pointer-events-none" />
+
+                  {/* Subtle Zoom Badge */}
+                  <div className="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-white/85 backdrop-blur-md border border-white/70 flex items-center justify-center text-[#1C242E] group-hover:text-[#BE185D] group-hover:scale-110 transition-all duration-300 shadow-xs">
+                    <Maximize2 size={13} />
                   </div>
 
-                  {/* Caption */}
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <span className="text-[11px] font-heading font-semibold uppercase tracking-wider text-rose-200 block mb-0.5">
-                      {item.subtitle}
+                  {/* Clean, Short Title & Branch Label */}
+                  <div className="absolute bottom-4 left-4 right-4 sm:bottom-5 sm:left-5 sm:right-5">
+                    <span className="text-[10px] sm:text-[11px] font-heading font-semibold uppercase tracking-wider text-rose-200 block mb-1">
+                      {item.branch}
                     </span>
-                    <h3 className="font-heading font-bold text-lg text-white">
+                    <h3 className="font-heading font-bold text-base sm:text-lg text-white leading-snug line-clamp-1">
                       {item.title}
                     </h3>
                   </div>
                 </div>
-              )
-            })()}
-          </div>
-
-          {/* Mobile Carousel Controls & Pagination Dots */}
-          <div className="flex items-center justify-between mt-4 px-1">
-            <button
-              onClick={() =>
-                setMobileSlideIdx((prev) => (prev > 0 ? prev - 1 : totalMobileSlides - 1))
-              }
-              aria-label="Previous Photo"
-              className="w-9 h-9 rounded-full border border-[#E8E2D8] bg-white active:bg-stone-100 flex items-center justify-center text-[#1C242E] cursor-pointer shadow-xs"
-            >
-              <ChevronLeft size={16} />
-            </button>
-
-            {/* Dots Indicator */}
-            <div className="flex items-center gap-2">
-              {currentImages.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setMobileSlideIdx(idx)}
-                  aria-label={`Go to photo ${idx + 1}`}
-                  className="cursor-pointer p-1"
-                >
-                  <span
-                    className={`block rounded-full transition-all duration-300 ${
-                      idx === mobileSlideIdx
-                        ? 'w-6 h-1.5 bg-[#BE185D]'
-                        : 'w-1.5 h-1.5 bg-stone-300'
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() =>
-                setMobileSlideIdx((prev) => (prev < totalMobileSlides - 1 ? prev + 1 : 0))
-              }
-              aria-label="Next Photo"
-              className="w-9 h-9 rounded-full border border-[#E8E2D8] bg-white active:bg-stone-100 flex items-center justify-center text-[#1C242E] cursor-pointer shadow-xs"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+              </div>
+            ))}
+          </motion.div>
         </div>
 
+        {/* Carousel Indicators / Dots & Mobile Navigation Controls */}
+        <div className="mt-8 flex items-center justify-between sm:justify-center relative">
+          {/* Mobile Prev Arrow */}
+          <button
+            onClick={handlePrev}
+            disabled={currentIndex === 0}
+            aria-label="Previous photo"
+            className={`sm:hidden w-9 h-9 rounded-full border border-[#E8E2D8] flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+              currentIndex === 0
+                ? 'bg-stone-100 text-stone-300 border-stone-200 opacity-40'
+                : 'bg-white text-[#1C242E] active:bg-stone-100'
+            }`}
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {/* Dots Pagination */}
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+            {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className="p-1.5 cursor-pointer"
+              >
+                <span
+                  className={`block rounded-full transition-all duration-300 ${
+                    idx === currentIndex
+                      ? 'w-6 sm:w-7 h-2 bg-[#BE185D]'
+                      : 'w-2 h-2 bg-stone-300 hover:bg-stone-400'
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Mobile Next Arrow */}
+          <button
+            onClick={handleNext}
+            disabled={currentIndex >= maxIndex}
+            aria-label="Next photo"
+            className={`sm:hidden w-9 h-9 rounded-full border border-[#E8E2D8] flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+              currentIndex >= maxIndex
+                ? 'bg-stone-100 text-stone-300 border-stone-200 opacity-40'
+                : 'bg-white text-[#1C242E] active:bg-stone-100'
+            }`}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Lightbox Modal (Desktop & Mobile) */}
       <AnimatePresence>
-        {lightboxIdx !== null && (
+        {lightboxIdx !== null && currentImages[lightboxIdx] && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-xl z-50 flex items-center justify-center p-4 sm:p-6"
+            className="fixed inset-0 bg-black/85 backdrop-blur-lg z-50 flex items-center justify-center p-4 sm:p-8"
           >
+            {/* Close Button */}
             <button
               onClick={() => setLightboxIdx(null)}
-              className="absolute top-5 right-5 p-2.5 rounded-full bg-white/20 hover:bg-white text-white hover:text-slate-950 transition-colors cursor-pointer"
+              className="absolute top-5 right-5 sm:top-6 sm:right-6 p-2.5 rounded-full bg-white/15 hover:bg-white text-white hover:text-[#1C242E] transition-all cursor-pointer z-10"
               aria-label="Close Lightbox"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
 
-            <div className="relative max-w-5xl max-h-[85vh] flex items-center justify-center gap-4 w-full">
+            {/* Lightbox Content Container */}
+            <div className="relative max-w-5xl w-full flex items-center justify-center gap-3 sm:gap-6">
+              {/* Prev Button */}
               <button
-                onClick={handleLightboxPrev}
-                className="p-3 rounded-full bg-white/20 hover:bg-white text-white hover:text-slate-950 transition-colors cursor-pointer hidden sm:flex shrink-0"
+                onClick={() =>
+                  setLightboxIdx((prev) =>
+                    prev !== null ? (prev - 1 + currentImages.length) % currentImages.length : null
+                  )
+                }
+                className="hidden sm:flex p-3.5 rounded-full bg-white/15 hover:bg-white text-white hover:text-[#1C242E] transition-all cursor-pointer shrink-0"
                 aria-label="Previous Image"
               >
-                <ChevronLeft size={22} />
+                <ChevronLeft size={24} />
               </button>
 
               <div className="flex flex-col items-center max-w-full">
-                <img
+                <motion.img
+                  key={currentImages[lightboxIdx].src}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.25 }}
                   src={currentImages[lightboxIdx].src}
                   alt={currentImages[lightboxIdx].title}
-                  className="max-w-[90vw] max-h-[70vh] object-contain rounded-2xl border border-white/20 shadow-2xl"
+                  className="max-w-[92vw] sm:max-w-4xl max-h-[70vh] object-contain rounded-2xl border border-white/15 shadow-2xl"
                 />
-                <div className="text-center mt-4">
-                  <h4 className="font-heading font-bold text-lg text-white">
+
+                {/* Caption & Branch Info */}
+                <div className="text-center mt-5">
+                  <span className="text-rose-300 text-xs font-heading font-semibold uppercase tracking-wider block mb-1">
+                    {currentImages[lightboxIdx].branch} &bull; Image {lightboxIdx + 1} of {currentImages.length}
+                  </span>
+                  <h4 className="font-heading font-bold text-lg sm:text-xl text-white">
                     {currentImages[lightboxIdx].title}
                   </h4>
-                  <span className="text-rose-300 text-xs font-heading font-semibold uppercase tracking-wider">
-                    {currentImages[lightboxIdx].subtitle} &bull; {currentGallery.name}
+                </div>
+
+                {/* Mobile Navigation inside Lightbox */}
+                <div className="flex sm:hidden items-center gap-6 mt-4">
+                  <button
+                    onClick={() =>
+                      setLightboxIdx((prev) =>
+                        prev !== null ? (prev - 1 + currentImages.length) % currentImages.length : null
+                      )
+                    }
+                    className="p-2.5 rounded-full bg-white/20 text-white active:bg-white active:text-[#1C242E]"
+                    aria-label="Previous Image"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <span className="text-white/80 text-xs font-heading">
+                    {lightboxIdx + 1} / {currentImages.length}
                   </span>
+                  <button
+                    onClick={() =>
+                      setLightboxIdx((prev) =>
+                        prev !== null ? (prev + 1) % currentImages.length : null
+                      )
+                    }
+                    className="p-2.5 rounded-full bg-white/20 text-white active:bg-white active:text-[#1C242E]"
+                    aria-label="Next Image"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
                 </div>
               </div>
 
+              {/* Next Button */}
               <button
-                onClick={handleLightboxNext}
-                className="p-3 rounded-full bg-white/20 hover:bg-white text-white hover:text-slate-950 transition-colors cursor-pointer hidden sm:flex shrink-0"
+                onClick={() =>
+                  setLightboxIdx((prev) =>
+                    prev !== null ? (prev + 1) % currentImages.length : null
+                  )
+                }
+                className="hidden sm:flex p-3.5 rounded-full bg-white/15 hover:bg-white text-white hover:text-[#1C242E] transition-all cursor-pointer shrink-0"
                 aria-label="Next Image"
               >
-                <ChevronRight size={22} />
+                <ChevronRight size={24} />
               </button>
             </div>
           </motion.div>

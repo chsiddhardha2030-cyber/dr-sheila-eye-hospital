@@ -20,7 +20,7 @@ export const Hero: React.FC = () => {
       {/* Desktop: 16:9 video (hidden on mobile) */}
       <video
         className="absolute inset-0 w-full h-full object-cover hidden md:block"
-        src="/Images/watermark_removed_381ca92b-5d2e-4c29-95b1-002d76dc3c2a.mp4"
+        src="/Images/16-9-eye-exploded-2.mp4"
         autoPlay
         muted
         loop

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowUpRight, Phone, MapPin, X, Info, PhoneCall } from 'lucide-react'
+import { ArrowUpRight, Phone, MapPin, X, Info, PhoneCall, Clock } from 'lucide-react'
+import { useHospitalData } from '../context/HospitalDataContext'
 
 interface ClinicBranch {
   id: string
@@ -20,8 +21,9 @@ interface ClinicBranch {
 export const Clinics: React.FC = () => {
   const [activeBranch, setActiveBranch] = useState<string>('palasa')
   const [showIchapuramModal, setShowIchapuramModal] = useState<boolean>(false)
+  const { branches: dbBranches } = useHospitalData()
 
-  const branches: ClinicBranch[] = [
+  const staticBranches: ClinicBranch[] = [
     {
       id: 'palasa',
       name: 'Palasa Hospital (Main Center)',
@@ -39,7 +41,7 @@ export const Clinics: React.FC = () => {
       opticalsHref: 'tel:8500774896',
       mapUrl: 'https://maps.google.com/?q=Dr.+Sheila+Eye+Hospital+VBR+Complex+Palasa+532221',
       surgical: true,
-      image: '/optimized/clinics/palasa/DSC_8320.webp',
+      image: '/optimized/clinics/palasa/SPD_6961.webp',
     },
     {
       id: 'sompeta',
@@ -56,7 +58,7 @@ export const Clinics: React.FC = () => {
       phoneHref: 'tel:08947234108',
       mapUrl: 'https://maps.app.goo.gl/tdYQZC4L9GYhPY3R6',
       surgical: false,
-      image: '/optimized/clinics/sompeta/DSC_8324.webp',
+      image: '/optimized/clinics/sompeta/Sompeta-branch-collab.png',
     },
     {
       id: 'ichapuram',
@@ -71,11 +73,22 @@ export const Clinics: React.FC = () => {
       phone: '08947-231261',
       phoneHref: 'tel:08947231261',
       surgical: false,
-      image: '/optimized/clinics/ichapuram/DSC_8512.webp',
+      image: '/optimized/clinics/ichapuram/Ichapuram-branch-collab.png',
     },
   ]
 
-  const current = branches.find((b) => b.id === activeBranch) || branches[0]
+  const current = staticBranches.find((b) => b.id === activeBranch) || staticBranches[0]
+
+  // Find dynamic database record for current branch
+  const currentDbBranch = dbBranches.find(
+    (b) => b.name.toLowerCase() === current.town.toLowerCase()
+  )
+
+  const isOpen = currentDbBranch ? currentDbBranch.is_open : true
+  const openingTime = currentDbBranch?.opening_time || '09:00 AM'
+  const closingTime = currentDbBranch?.closing_time || '08:00 PM'
+  const displayPhone = currentDbBranch?.whatsapp_number || current.phone
+  const displayPhoneHref = `tel:${displayPhone.replace(/\D/g, '')}`
 
   const scrollToAppointment = () => {
     const element = document.querySelector('#appointment')
@@ -109,21 +122,31 @@ export const Clinics: React.FC = () => {
           </p>
         </div>
 
-        {/* Simple Branch Selector Tabs */}
+        {/* Simple Branch Selector Tabs with live open/closed dots */}
         <div className="flex flex-wrap gap-2.5 pb-6 border-b border-[#E8E2D8] mb-10">
-          {branches.map((branch) => (
-            <button
-              key={branch.id}
-              onClick={() => setActiveBranch(branch.id)}
-              className={`px-5 py-2.5 rounded-full font-heading text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
-                activeBranch === branch.id
-                  ? 'bg-[#1C242E] text-white shadow-md font-bold'
-                  : 'bg-white text-[#5A687A] hover:text-[#1C242E] hover:bg-stone-50 border border-[#E8E2D8]'
-              }`}
-            >
-              {branch.town}
-            </button>
-          ))}
+          {staticBranches.map((branch) => {
+            const dbB = dbBranches.find((b) => b.name.toLowerCase() === branch.town.toLowerCase())
+            const bOpen = dbB ? dbB.is_open : true
+
+            return (
+              <button
+                key={branch.id}
+                onClick={() => setActiveBranch(branch.id)}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-heading text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 cursor-pointer ${
+                  activeBranch === branch.id
+                    ? 'bg-[#1C242E] text-white shadow-md font-bold'
+                    : 'bg-white text-[#5A687A] hover:text-[#1C242E] hover:bg-stone-50 border border-[#E8E2D8]'
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    bOpen ? 'bg-emerald-400' : 'bg-rose-400'
+                  }`}
+                />
+                <span>{branch.town}</span>
+              </button>
+            )
+          })}
         </div>
 
         {/* Selected Branch Editorial Card Presentation */}
@@ -138,7 +161,7 @@ export const Clinics: React.FC = () => {
           >
             {/* Left: Branch Details & Contact */}
             <div className="lg:col-span-6 flex flex-col items-start">
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex flex-wrap items-center gap-2.5 mb-3">
                 <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#BE185D]">
                   {current.town} Center
                 </span>
@@ -147,6 +170,16 @@ export const Clinics: React.FC = () => {
                     Surgical Hospital
                   </span>
                 )}
+                {/* Dynamic Supabase Open/Closed Badge */}
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                    isOpen
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-rose-50 text-rose-700 border-rose-200'
+                  }`}
+                >
+                  {isOpen ? '● Open Today' : '○ Closed Today'}
+                </span>
               </div>
 
               <h3 className="font-heading font-bold text-2xl sm:text-4xl text-[#1C242E] tracking-tight leading-tight mb-3">
@@ -159,8 +192,20 @@ export const Clinics: React.FC = () => {
 
               <div className="w-full h-px bg-[#E8E2D8] mb-6" />
 
-              {/* Address & Emergency Info */}
+              {/* Address, Timings & Emergency Info */}
               <div className="flex flex-col gap-4 mb-8 w-full text-sm">
+                
+                {/* OPD Timings from Supabase */}
+                <div className="flex items-center gap-3 text-stone-700">
+                  <Clock size={18} className="text-[#BE185D] shrink-0" />
+                  <div className="flex items-center gap-2 text-xs sm:text-sm">
+                    <span className="text-[#5A687A]">Consultation Hours:</span>
+                    <strong className="text-[#1C242E]">
+                      {isOpen ? `${openingTime} – ${closingTime}` : 'Currently Closed'}
+                    </strong>
+                  </div>
+                </div>
+
                 <div className="flex items-start gap-3 text-stone-700">
                   <MapPin size={18} className="text-[#BE185D] shrink-0 mt-1" />
                   <div className="flex flex-col leading-relaxed">
@@ -174,7 +219,7 @@ export const Clinics: React.FC = () => {
                   <Phone size={16} className="text-[#BE185D] shrink-0 mt-0.5" />
                   <div className="flex flex-col gap-1">
                     <span className="text-stone-700">
-                      Emergency / Reception: <strong className="text-[#1C242E]">{current.phone}</strong>
+                      Emergency / Reception: <strong className="text-[#1C242E]">{displayPhone}</strong>
                     </span>
                     {current.opticals && (
                       <span className="text-stone-700">
@@ -188,7 +233,7 @@ export const Clinics: React.FC = () => {
               {/* Actions */}
               <div className="flex flex-wrap items-center gap-3.5 w-full sm:w-auto">
                 <a
-                  href={current.phoneHref}
+                  href={displayPhoneHref}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-sm cursor-pointer"
                 >
                   <PhoneCall size={14} />
@@ -279,13 +324,13 @@ export const Clinics: React.FC = () => {
                 <div className="w-full p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D8] flex items-center justify-between mt-1">
                   <span className="text-xs text-[#5A687A] font-medium">Emergency / Reception:</span>
                   <span className="font-heading font-semibold text-[#1C242E] text-sm">
-                    08947-231261
+                    {displayPhone}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-3 w-full mt-2">
                   <a
-                    href="tel:08947231261"
+                    href={displayPhoneHref}
                     className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors shadow-sm"
                   >
                     <PhoneCall size={14} />

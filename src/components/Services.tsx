@@ -44,7 +44,7 @@ export const Services: React.FC = () => {
       description:
         'Accurate optical refraction to determine exact spectacle correction and customized contact lens fitting solutions.',
       points: [
-        'Objective automated refraction via autorefractometer',
+        'Automated refraction with autorefractometer',
         'Subjective trial lens testing & verification',
         'Prescription for myopia, hyperopia, and astigmatism',
         'Presbyopia reading glass evaluation',
@@ -60,7 +60,7 @@ export const Services: React.FC = () => {
       description:
         'Early screening and ongoing monitoring for progressive sight-threatening ocular conditions.',
       points: [
-        'Goldmann applanation intraocular pressure (IOP) monitoring',
+        'Applanation Tonometry for intraocular pressure (IOP) monitoring',
         'Direct and indirect ophthalmoscopic fundus examination',
         'Diabetic eye screening & hypertensive retinopathy checks',
         'Glaucoma risk assessment and optic disc evaluation',
@@ -76,10 +76,8 @@ export const Services: React.FC = () => {
       description:
         'Complete in-house dispensary and optical stores ensuring immediate access to prescribed ophthalmic medications and customized spectacles.',
       points: [
-        'In-house pharmacy stocked with genuine ophthalmic medications',
-        'Antibiotic, lubricating, and anti-glaucoma eye drops',
-        'Optical dispensing unit with curated frame collections',
-        'High-quality anti-reflective and blue-cut spectacle lenses',
+        'Premium in-house pharmacy with top-tier inventory',
+        'Optical dispensing unit with high quality and branded frames and lenses',
         'Contact lens solutions and lens accessories',
         'Available consistently across Palasa, Sompeta, and Ichapuram',
       ],
