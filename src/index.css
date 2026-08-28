@@ -82,3 +82,16 @@ h1, h2, h3, h4, h5, h6 {
     scroll-behavior: auto !important;
   }
 }
+
+/* Native select & option contrast and readability */
+select option {
+  color: #1C242E;
+  background-color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+select option:disabled {
+  color: #8A96A6;
+  background-color: #FAF8F5;
+}

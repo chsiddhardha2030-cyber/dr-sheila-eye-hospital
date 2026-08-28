@@ -41,7 +41,7 @@ export const Clinics: React.FC = () => {
       opticalsHref: 'tel:8500774896',
       mapUrl: 'https://maps.google.com/?q=Dr.+Sheila+Eye+Hospital+VBR+Complex+Palasa+532221',
       surgical: true,
-      image: '/optimized/clinics/palasa/SPD_6961.webp',
+      image: '/optimized/clinics/palasa/SPD_6961 (1).png',
     },
     {
       id: 'sompeta',
