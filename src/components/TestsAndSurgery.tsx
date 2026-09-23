@@ -18,6 +18,12 @@ interface FacilityItem {
   description: string
 }
 
+interface FacilityGroup {
+  title: string
+  subtitle?: string
+  items: FacilityItem[]
+}
+
 interface CategoryData {
   id: string
   number: string
@@ -32,6 +38,7 @@ interface CategoryData {
   image: string
   imageCaption: string
   items: FacilityItem[]
+  groups?: FacilityGroup[]
 }
 
 export const TestsAndSurgery: React.FC = () => {
@@ -43,8 +50,165 @@ export const TestsAndSurgery: React.FC = () => {
 
   const categories: CategoryData[] = [
     {
-      id: 'diagnostics',
+      id: 'surgical',
       number: '01',
+      name: 'Surgical Services',
+      shortTag: 'Ophthalmic Microsurgery',
+      icon: Scissors,
+      title: 'Specialized Ophthalmic Microsurgery & Refractive Solutions',
+      subtitle:
+        'Advanced microsurgical interventions performed by experienced eye surgeons, featuring phacoemulsification cataract surgery, premium IOL implantation, and refractive care.',
+      palasaOnly: true,
+      scopeBadge: 'Palasa Hospital Only',
+      facilityCount: 'Cataract, IOLs & Refractive Care',
+      image: '/optimized/clinics/palasa/IMG_0815.jpeg',
+      imageCaption: 'Microsurgical Suite & Cataract Care',
+      items: [
+        {
+          name: 'Phacoemulsification Cataract Surgery',
+          description:
+            'Micro-incision sutureless cataract extraction with premium foldable intraocular lens (IOL) implantation.',
+        },
+        {
+          name: 'Premium IOL Implantation (Monofocal, Multifocal, Toric)',
+          description:
+            'Tailored lens replacement options providing clear vision across various focal distances and correcting astigmatism.',
+        },
+        {
+          name: 'Small Incision Cataract Surgery (SICS)',
+          description:
+            'Manual sutureless small-incision cataract surgery delivering reliable visual rehabilitation.',
+        },
+        {
+          name: 'Glaucoma Trabeculectomy',
+          description:
+            'Surgical filtration procedures to lower and stabilize intraocular pressure in advanced glaucoma.',
+        },
+      ],
+      groups: [
+        {
+          title: 'Cataract & Premium Intraocular Lenses (IOLs)',
+          subtitle:
+            'Micro-incision surgical techniques and advanced lens replacement options for restored clarity.',
+          items: [
+            {
+              name: 'Cataract Evaluation',
+              description:
+                'Comprehensive pre-operative assessment, high-resolution anterior segment examination, and optical biometry for precise IOL power calculation.',
+            },
+            {
+              name: 'Phacoemulsification',
+              description:
+                'Micro-incision sutureless ultrasonic cataract extraction enabling quick visual rehabilitation and minimal post-operative recovery time.',
+            },
+            {
+              name: 'Premium IOLs',
+              description:
+                'Advanced foldable intraocular lens options customized to suit each patient’s lifestyle, reading habits, and visual demands.',
+            },
+            {
+              name: 'Monofocal Lenses',
+              description:
+                'High-clarity single-distance intraocular lenses engineered to provide sharp, dependable distance vision.',
+            },
+            {
+              name: 'Multifocal Lenses',
+              description:
+                'Advanced multifocal optics designed for simultaneous distance, intermediate, and near reading focus, reducing spectacle dependency.',
+            },
+            {
+              name: 'Toric Lenses',
+              description:
+                'Specialized astigmatism-correcting intraocular implants that neutralize corneal cylindrical errors for crisp, distortion-free sight.',
+            },
+            {
+              name: 'Small Incision Cataract Surgery (SICS)',
+              description:
+                'Manual sutureless small-incision technique providing safe and reliable visual restoration.',
+            },
+          ],
+        },
+        {
+          title: 'Refractive Errors & Vision Care',
+          subtitle:
+            'Clinical evaluation and corrective strategies for focusing disorders across all patient age groups.',
+          items: [
+            {
+              name: 'Myopia (Nearsightedness)',
+              description:
+                'Comprehensive refractive assessment and optical management for difficulty seeing distant objects clearly.',
+            },
+            {
+              name: 'Hypermetropia (Farsightedness)',
+              description:
+                'Clinical diagnosis and corrective solutions to alleviate close-up eye strain, headache, and near focus blur.',
+            },
+            {
+              name: 'Astigmatism',
+              description:
+                'Detailed corneal curvature mapping and customized toric optical correction for irregular corneal focusing.',
+            },
+            {
+              name: 'Presbyopia',
+              description:
+                'Progressive reading vision management and tailored optical solutions for age-related natural lens stiffening (40+ years).',
+            },
+          ],
+        },
+        {
+          title: 'Glaucoma & Specialized Surgical Interventions',
+          subtitle:
+            'Targeted microsurgical procedures to reduce intraocular pressure and preserve sight.',
+          items: [
+            {
+              name: 'Glaucoma Trabeculectomy',
+              description:
+                'Microsurgical filtration procedure creating a drainage bypass to normalize intraocular pressure and protect the optic nerve.',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'theatre',
+      number: '02',
+      name: 'OT Facilities',
+      shortTag: 'Operation Theatre & Recovery',
+      icon: Sparkles,
+      title: 'Operation Theatre Complex & Day-Care Care',
+      subtitle:
+        'Dedicated sterile surgical environment equipped for high-precision ophthalmic microsurgery.',
+      palasaOnly: true,
+      scopeBadge: 'Palasa Hospital Only',
+      facilityCount: '4 Sterile Suites & Tech',
+      image: '/optimized/clinics/palasa/DSC_8211.webp',
+      imageCaption: 'Sterile Operation Theatre & CSSD',
+      items: [
+        {
+          name: 'Ophthalmic Operating Microscope',
+          description:
+            'High-definition stereoscopic illumination and optics for microsurgical precision.',
+        },
+        {
+          name: 'Advanced Phacoemulsification Machine',
+          description:
+            'Fluidic management and ultrasonic control systems for safe cataract extraction.',
+        },
+        {
+          name: 'CSSD & Rigid Sterilization Protocols',
+          description:
+            'Dedicated sterilization unit ensuring strict aseptic conditions and surgical safety.',
+        },
+        {
+          name: 'Day-Care Surgery & Recovery Lounge',
+          description:
+            'Monitored post-operative recovery area designed for patient comfort and same-day discharge.',
+        },
+      ],
+    },
+    {
+      id: 'diagnostics',
+      number: '03',
       name: 'Diagnostic Tests',
       shortTag: 'Comprehensive Diagnostics',
       icon: Activity,
@@ -91,7 +255,7 @@ export const TestsAndSurgery: React.FC = () => {
     },
     {
       id: 'lasers',
-      number: '02',
+      number: '04',
       name: 'Laser Treatments',
       shortTag: 'Non-Invasive Laser Therapy',
       icon: Zap,
@@ -118,80 +282,6 @@ export const TestsAndSurgery: React.FC = () => {
           name: 'Post-Laser Monitoring & Follow-Up',
           description:
             'Careful intraocular pressure checks and structured recovery protocols after laser therapy.',
-        },
-      ],
-    },
-    {
-      id: 'surgical',
-      number: '03',
-      name: 'Surgical Services',
-      shortTag: 'Ophthalmic Microsurgery',
-      icon: Scissors,
-      title: 'Specialized Ophthalmic Microsurgery',
-      subtitle:
-        'Advanced microsurgical interventions performed by experienced eye surgeons with modern clinical protocols.',
-      palasaOnly: true,
-      scopeBadge: 'Palasa Hospital Only',
-      facilityCount: '4 Surgical Specialties',
-      image: '/optimized/clinics/palasa/IMG_0815.jpeg',
-      imageCaption: 'Microsurgical Suite & Cataract Care',
-      items: [
-        {
-          name: 'Phacoemulsification Cataract Surgery',
-          description:
-            'Micro-incision sutureless cataract extraction with premium foldable intraocular lens (IOL) implantation.',
-        },
-        {
-          name: 'Small Incision Cataract Surgery (SICS)',
-          description:
-            'Manual sutureless small-incision cataract surgery delivering reliable visual rehabilitation.',
-        },
-        {
-          name: 'Glaucoma Trabeculectomy',
-          description:
-            'Surgical filtration procedures to lower and stabilize intraocular pressure in advanced glaucoma.',
-        },
-        {
-          name: 'Ocular Trauma & Microsurgical Repair',
-          description:
-            'Emergency management and meticulous microsurgical repair of ocular injuries and lacerations.',
-        },
-      ],
-    },
-    {
-      id: 'theatre',
-      number: '04',
-      name: 'OT Facilities',
-      shortTag: 'Operation Theatre & Recovery',
-      icon: Sparkles,
-      title: 'Operation Theatre Complex & Day-Care Care',
-      subtitle:
-        'Dedicated sterile surgical environment equipped for high-precision ophthalmic microsurgery.',
-      palasaOnly: true,
-      scopeBadge: 'Palasa Hospital Only',
-      facilityCount: '4 Sterile Suites & Tech',
-      image: '/optimized/clinics/palasa/DSC_8211.webp',
-      imageCaption: 'Sterile Operation Theatre & CSSD',
-      items: [
-        {
-          name: 'Ophthalmic Operating Microscope',
-          description:
-            'High-definition stereoscopic illumination and optics for microsurgical precision.',
-        },
-        {
-          name: 'Advanced Phacoemulsification Machine',
-          description:
-            'Fluidic management and ultrasonic control systems for safe cataract extraction.',
-        },
-        {
-          name: 'CSSD & Rigid Sterilization Protocols',
-          description:
-            'Dedicated sterilization unit ensuring strict aseptic conditions and surgical safety.',
-        },
-        {
-          name: 'Day-Care Surgery & Recovery Lounge',
-          description:
-            'Monitored post-operative recovery area designed for patient comfort and same-day discharge.',
         },
       ],
     },
@@ -627,48 +717,93 @@ export const TestsAndSurgery: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Section Divider */}
-                    <div className="flex items-center gap-4 my-8">
-                      <div className="h-px bg-[#E8E2D8] flex-grow" />
-                      <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#8A96A6]">
-                        All {current.name} Capabilities ({current.items.length})
-                      </span>
-                      <div className="h-px bg-[#E8E2D8] flex-grow" />
-                    </div>
-
-                    {/* ── ALL RELEVANT POINTS: Spacious, Symmetrical Card Grid ───── */}
-                    <div
-                      className={`grid grid-cols-1 ${
-                        current.items.length === 3
-                          ? 'md:grid-cols-3'
-                          : 'md:grid-cols-2'
-                      } gap-5 sm:gap-6`}
-                    >
-                      {current.items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="p-6 sm:p-7 rounded-2xl bg-white border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)] flex flex-col justify-between group"
-                        >
-                          <div>
-                            {/* Item Header */}
-                            <div className="flex items-center justify-between mb-3.5">
-                              <span className="font-heading font-extrabold text-lg sm:text-xl text-[#BE185D]/40 group-hover:text-[#BE185D] transition-colors duration-300 tabular-nums">
-                                {String(idx + 1).padStart(2, '0')}
-                              </span>
-                              <div className="w-2 h-2 rounded-full bg-rose-200 group-hover:bg-[#BE185D] transition-colors" />
+                    {/* Section Divider & Capabilities */}
+                    {current.groups ? (
+                      <div className="flex flex-col gap-10 my-8">
+                        {current.groups.map((grp, grpIdx) => (
+                          <div key={grpIdx} className="flex flex-col">
+                            <div className="flex items-center gap-3 mb-1.5">
+                              <span className="w-2 h-2 rounded-full bg-[#BE185D]" />
+                              <h4 className="font-heading font-bold text-lg sm:text-xl text-[#1C242E] tracking-tight">
+                                {grp.title}
+                              </h4>
                             </div>
-
-                            <h4 className="font-heading font-bold text-base sm:text-lg text-[#1C242E] tracking-tight group-hover:text-[#BE185D] transition-colors mb-2.5">
-                              {item.name}
-                            </h4>
-
-                            <p className="text-[#5A687A] text-sm leading-relaxed font-normal">
-                              {item.description}
-                            </p>
+                            {grp.subtitle && (
+                              <p className="text-xs sm:text-sm text-[#5A687A] mb-5 font-normal">
+                                {grp.subtitle}
+                              </p>
+                            )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                              {grp.items.map((item, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-5 sm:p-6 rounded-2xl bg-white border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)] flex flex-col justify-between group"
+                                >
+                                  <div>
+                                    <div className="flex items-center justify-between mb-3">
+                                      <span className="font-heading font-extrabold text-sm text-[#BE185D]/60 group-hover:text-[#BE185D] transition-colors duration-300">
+                                        {String(idx + 1).padStart(2, '0')}
+                                      </span>
+                                      <div className="w-1.5 h-1.5 rounded-full bg-rose-200 group-hover:bg-[#BE185D] transition-colors" />
+                                    </div>
+                                    <h5 className="font-heading font-bold text-sm sm:text-base text-[#1C242E] tracking-tight group-hover:text-[#BE185D] transition-colors mb-2">
+                                      {item.name}
+                                    </h5>
+                                    <p className="text-[#5A687A] text-xs sm:text-sm leading-relaxed font-normal">
+                                      {item.description}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-4 my-8">
+                          <div className="h-px bg-[#E8E2D8] flex-grow" />
+                          <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#8A96A6]">
+                            All {current.name} Capabilities ({current.items.length})
+                          </span>
+                          <div className="h-px bg-[#E8E2D8] flex-grow" />
                         </div>
-                      ))}
-                    </div>
+
+                        {/* ── ALL RELEVANT POINTS: Spacious, Symmetrical Card Grid ───── */}
+                        <div
+                          className={`grid grid-cols-1 ${
+                            current.items.length === 3
+                              ? 'md:grid-cols-3'
+                              : 'md:grid-cols-2'
+                          } gap-5 sm:gap-6`}
+                        >
+                          {current.items.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="p-6 sm:p-7 rounded-2xl bg-white border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)] flex flex-col justify-between group"
+                            >
+                              <div>
+                                {/* Item Header */}
+                                <div className="flex items-center justify-between mb-3.5">
+                                  <span className="font-heading font-extrabold text-lg sm:text-xl text-[#BE185D]/40 group-hover:text-[#BE185D] transition-colors duration-300 tabular-nums">
+                                    {String(idx + 1).padStart(2, '0')}
+                                  </span>
+                                  <div className="w-2 h-2 rounded-full bg-rose-200 group-hover:bg-[#BE185D] transition-colors" />
+                                </div>
+
+                                <h4 className="font-heading font-bold text-base sm:text-lg text-[#1C242E] tracking-tight group-hover:text-[#BE185D] transition-colors mb-2.5">
+                                  {item.name}
+                                </h4>
+
+                                <p className="text-[#5A687A] text-sm leading-relaxed font-normal">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
 
                     {/* ── Bottom Panel Navigation Bar ─────────────────────────────── */}
                     <div className="mt-12 pt-8 border-t border-[#E8E2D8] flex flex-col sm:flex-row items-center justify-between gap-4">

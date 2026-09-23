@@ -18,8 +18,8 @@ export const Navbar: React.FC = () => {
     { name: 'Home', href: '#hero' },
     { name: 'Doctors', href: '#doctors' },
     { name: 'About', href: '#about' },
-    { name: 'Services', href: '#services' },
     { name: 'Tests', href: '#tests' },
+    { name: 'Services', href: '#services' },
     { name: 'Gallery', href: '#gallery' },
     { name: 'Contact', href: '#contact' },
   ]
@@ -52,7 +52,7 @@ export const Navbar: React.FC = () => {
             className="flex items-baseline gap-2 group cursor-pointer"
           >
             <span className="font-heading font-extrabold text-xl tracking-tight text-[#1C242E] group-hover:text-[#BE185D] transition-colors">
-              Dr. Sheila
+              Dr. Sheilas
             </span>
             <span className="text-[11px] font-medium tracking-[0.2em] uppercase text-[#5A687A]">
               Eye Hospitals

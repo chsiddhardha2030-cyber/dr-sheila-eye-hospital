@@ -1,20 +1,10 @@
-import React, { useState, useRef } from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Premium inline SVG icons — minimal, medical, consistent with warm light theme
 ───────────────────────────────────────────────────────────────────────────── */
-
-const IconHospitalNetwork = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="6" y="1" width="10" height="20" rx="1.5" stroke="currentColor" strokeWidth="1.4" fill="none"/>
-    <rect x="1" y="7" width="20" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4" fill="none"/>
-    <rect x="9.5" y="3.5" width="3" height="3" rx="0.5" fill="currentColor" opacity="0.6"/>
-    <rect x="9.5" y="15.5" width="3" height="3" rx="0.5" fill="currentColor" opacity="0.6"/>
-    <rect x="3.5" y="10" width="3.5" height="2" rx="0.5" fill="currentColor" opacity="0.6"/>
-    <rect x="15" y="10" width="3.5" height="2" rx="0.5" fill="currentColor" opacity="0.6"/>
-  </svg>
-)
 
 const IconMission = () => (
   <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -49,13 +39,6 @@ const IconPatientCare = () => (
 
 const pillars = [
   {
-    Icon: IconHospitalNetwork,
-    label: 'Introduction',
-    title: 'Hospital Network',
-    description:
-      'Dr. Sheila\u2019s Eye Hospitals is a dedicated regional eye care network serving the Srikakulam district through modern clinical centers in Palasa, Sompeta, and Ichapuram.',
-  },
-  {
     Icon: IconMission,
     label: 'Our Mission',
     title: 'Mission Statement',
@@ -78,8 +61,118 @@ const pillars = [
   },
 ]
 
+const aboutSlides = [
+  {
+    image: '/optimized/about/DSC_8300.webp',
+    alt: 'Dr. Sheilas Eye Hospital Clinical Facility',
+    caption: 'Comprehensive Eye Care & Modern Facility',
+    tag: 'Clinical Excellence',
+  },
+  {
+    image: '/optimized/about/Sheilas Eye Hospital Palasa Branch Image.webp',
+    alt: 'Dr. Sheilas Eye Hospital – Palasa Branch',
+    caption: 'Sheilas Eye Hospital · Palasa Branch',
+    tag: 'Main Surgical Hospital',
+  },
+  {
+    image: '/optimized/about/IMG_5837.webp',
+    alt: 'Dr. Sheilas Eye Hospital Facility',
+    caption: 'Modern Clinical Facility & Patient Care',
+    tag: 'Advanced Infrastructure',
+  },
+  {
+    image: '/optimized/about/IMG_5842.webp',
+    alt: 'Dr. Sheilas Eye Hospital Diagnostic Suite',
+    caption: 'Comprehensive Eye Examination Suite',
+    tag: 'Diagnostic Care',
+  },
+  {
+    image: '/optimized/about/IMG_5844.webp',
+    alt: 'Dr. Sheilas Eye Hospital Ophthalmic Tech',
+    caption: 'Sterile OT & Surgical Precision Equipment',
+    tag: 'Palasa OT Complex',
+  },
+  {
+    image: '/optimized/about/IMG_5845.webp',
+    alt: 'Dr. Sheilas Eye Hospital Consultation Area',
+    caption: 'Dedicated Consultation & Optical Dispensary',
+    tag: 'Patient-First Environment',
+  },
+]
+
 export const Introduction: React.FC = () => {
-  const [activeIndex, setActiveIndex] = useState(0)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+  const [slideDirection, setSlideDirection] = useState(1)
+  const [isInView, setIsInView] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
+
+  /* ── Viewport Visibility Observer for Independent Slideshow ─────────────── */
+  useEffect(() => {
+    const el = sectionRef.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting)
+      },
+      { threshold: 0.2 }
+    )
+
+    observer.observe(el)
+    return () => {
+      if (el) observer.unobserve(el)
+    }
+  }, [])
+
+  /* ── Auto-advance slideshow only when section is visible ────────────────── */
+  useEffect(() => {
+    if (!isInView || isPaused) return
+    const timer = setInterval(() => {
+      setSlideDirection(1)
+      setCurrentSlide((prev) => (prev + 1) % aboutSlides.length)
+    }, 3500) // Display each image for 3.5s (> 2 seconds requirement)
+    return () => clearInterval(timer)
+  }, [isInView, isPaused])
+
+  const nextSlide = () => {
+    setSlideDirection(1)
+    setCurrentSlide((prev) => (prev + 1) % aboutSlides.length)
+  }
+
+  const prevSlide = () => {
+    setSlideDirection(-1)
+    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : aboutSlides.length - 1))
+  }
+
+  /* ── Touch handlers for mobile slideshow ──────────────────────────────── */
+  const slideTouchStartX = useRef<number | null>(null)
+  const slideTouchEndX = useRef<number | null>(null)
+
+  const handleSlideTouchStart = (e: React.TouchEvent) => {
+    slideTouchStartX.current = e.touches[0].clientX
+  }
+
+  const handleSlideTouchMove = (e: React.TouchEvent) => {
+    slideTouchEndX.current = e.touches[0].clientX
+  }
+
+  const handleSlideTouchEnd = () => {
+    if (slideTouchStartX.current === null || slideTouchEndX.current === null) return
+    const delta = slideTouchStartX.current - slideTouchEndX.current
+    if (Math.abs(delta) > 40) {
+      if (delta > 0) {
+        nextSlide()
+      } else {
+        prevSlide()
+      }
+    }
+    slideTouchStartX.current = null
+    slideTouchEndX.current = null
+  }
+
+  /* ── Mobile carousel for pillars ──────────────────────────────────────── */
+  const [activePillarIndex, setActivePillarIndex] = useState(0)
   const touchStartX = useRef<number | null>(null)
   const touchEndX = useRef<number | null>(null)
 
@@ -96,9 +189,9 @@ export const Introduction: React.FC = () => {
     const delta = touchStartX.current - touchEndX.current
     if (Math.abs(delta) > 40) {
       if (delta > 0) {
-        setActiveIndex((prev) => Math.min(prev + 1, pillars.length - 1))
+        setActivePillarIndex((prev) => Math.min(prev + 1, pillars.length - 1))
       } else {
-        setActiveIndex((prev) => Math.max(prev - 1, 0))
+        setActivePillarIndex((prev) => Math.max(prev - 1, 0))
       }
     }
     touchStartX.current = null
@@ -107,12 +200,13 @@ export const Introduction: React.FC = () => {
 
   return (
     <section
+      ref={sectionRef}
       id="about"
       className="bg-[#FFFFFF] pt-14 pb-20 md:py-36 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        {/* Section Header — Editorial two-column: text left, hospital image right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center mb-12 md:mb-20">
+        {/* Section Header — Editorial two-column: text left, hospital slideshow right */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center mb-14 md:mb-20">
           {/* Left: Heading + description */}
           <motion.div
             initial={{ opacity: 0, y: 25 }}
@@ -122,20 +216,17 @@ export const Introduction: React.FC = () => {
             className="lg:col-span-7 flex flex-col"
           >
             <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-4 block">
-              About Dr. Sheila Eye Hospitals
+              About Dr. Sheilas Eye Hospitals
             </span>
             <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.15] mb-6">
               Dedicated ophthalmic expertise rooted in genuine patient care.
             </h2>
             <p className="text-[#5A687A] text-base sm:text-lg leading-relaxed font-normal mb-4">
-              Established to provide dependable ophthalmic care across the north-coastal region of Andhra Pradesh, Dr. Sheila&#39;s Eye Hospitals operates specialized outpatient clinics in Sompeta and Ichapuram alongside a centralized microsurgical hospital in Palasa.
-            </p>
-            <p className="text-sm text-[#8A96A6] leading-relaxed">
               Committed to preserving and restoring visual clarity through experienced surgeons, modern ophthalmic diagnostics, and community-wide public eye health initiatives.
             </p>
           </motion.div>
 
-          {/* Right: Dr. Sheila's Eye Hospital — front-view photograph */}
+          {/* Right: Hospital Slideshow / Carousel */}
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -143,27 +234,103 @@ export const Introduction: React.FC = () => {
             transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-5"
           >
-            <div className="relative rounded-2xl overflow-hidden border border-[#E8E2D8] shadow-[0_8px_30px_rgba(28,36,46,0.06)] aspect-[3/4] group">
-              <img
-                src="/optimized/clinics/palasa/Combined-picture-of-all-branches(1).png"
-                alt="Dr. Sheila's Eye Hospital — Palasa Main Center, front view"
-                className="w-full h-full object-cover object-center group-hover:scale-[1.03] transition-transform duration-700"
-                loading="lazy"
-              />
-              {/* Subtle light gradient vignette */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/70 via-transparent to-transparent pointer-events-none" />
-              {/* Caption badge */}
-              <div className="absolute bottom-5 left-5 right-5">
-                <span className="inline-block px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-white/80 text-[11px] font-heading font-semibold tracking-wider uppercase text-[#1C242E] shadow-sm">
-                  Dr. Sheila&#39;s Eye Hospital · Palasa
+            <div
+              className="relative rounded-2xl overflow-hidden border border-[#E8E2D8] shadow-[0_8px_30px_rgba(28,36,46,0.06)] aspect-[3/4] bg-stone-100 group select-none"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              onTouchStart={handleSlideTouchStart}
+              onTouchMove={handleSlideTouchMove}
+              onTouchEnd={handleSlideTouchEnd}
+            >
+              {/* Active Slide Presentation */}
+              <AnimatePresence mode="wait" custom={slideDirection}>
+                <motion.div
+                  key={currentSlide}
+                  custom={slideDirection}
+                  initial={{ opacity: 0, x: slideDirection > 0 ? 30 : -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: slideDirection > 0 ? -30 : 30 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute inset-0"
+                >
+                  <img
+                    src={aboutSlides[currentSlide].image}
+                    alt={aboutSlides[currentSlide].alt}
+                    className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-700"
+                    loading="lazy"
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Subtle vignette gradients */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1C242E]/80 via-black/10 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[#1C242E]/30 via-transparent to-transparent pointer-events-none" />
+
+              {/* Top Tag & Slide Counter */}
+              <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-10">
+                <span className="px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-[10px] font-heading font-semibold tracking-wider uppercase text-white shadow-xs">
+                  {aboutSlides[currentSlide].tag}
                 </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-[11px] font-mono text-white/90 font-medium border border-white/20">
+                  {currentSlide + 1} / {aboutSlides.length}
+                </span>
+              </div>
+
+              {/* Navigation Arrows */}
+              <div className="absolute inset-y-0 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+                <button
+                  onClick={prevSlide}
+                  aria-label="Previous Slide"
+                  className="pointer-events-auto w-9 h-9 rounded-full bg-white/80 hover:bg-white text-[#1C242E] backdrop-blur-md border border-white/60 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  aria-label="Next Slide"
+                  className="pointer-events-auto w-9 h-9 rounded-full bg-white/80 hover:bg-white text-[#1C242E] backdrop-blur-md border border-white/60 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {/* Caption & Indicators Bottom Bar */}
+              <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col gap-3">
+                <div className="bg-white/90 backdrop-blur-md border border-white/80 px-3.5 py-2 rounded-xl text-left shadow-sm">
+                  <span className="block text-xs font-heading font-semibold tracking-wide text-[#1C242E]">
+                    {aboutSlides[currentSlide].caption}
+                  </span>
+                </div>
+
+                {/* Pagination Dots */}
+                <div className="flex items-center justify-center gap-1.5">
+                  {aboutSlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSlideDirection(idx > currentSlide ? 1 : -1)
+                        setCurrentSlide(idx)
+                      }}
+                      aria-label={`Go to slide ${idx + 1}`}
+                      className="cursor-pointer p-1"
+                    >
+                      <span
+                        className={`block rounded-full transition-all duration-300 ${
+                          currentSlide === idx
+                            ? 'w-6 h-1.5 bg-[#BE185D] shadow-sm'
+                            : 'w-1.5 h-1.5 bg-white/60 hover:bg-white'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
         </div>
 
-        {/* ── DESKTOP: 4-column grid ─────────────────────────────────────────── */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* ── DESKTOP: 3-column evenly spaced grid ─────────────────────────── */}
+        <div className="hidden md:grid md:grid-cols-3 gap-6 lg:gap-8">
           {pillars.map((pillar, idx) => {
             const { Icon } = pillar
             return (
@@ -173,10 +340,10 @@ export const Introduction: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.7, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="p-7 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 flex flex-col justify-between group shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)]"
+                className="p-7 sm:p-8 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D8] hover:border-[#BE185D]/40 transition-all duration-300 flex flex-col justify-between group shadow-[0_4px_20px_-2px_rgba(28,36,46,0.03)] hover:shadow-[0_12px_30px_-4px_rgba(190,24,93,0.08)]"
               >
                 <div>
-                  <div className="w-12 h-12 rounded-xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D] mb-6 group-hover:bg-[#BE185D] group-hover:text-white transition-all duration-300">
+                  <div className="w-12 h-12 rounded-xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D] mb-6 group-hover:bg-[#BE185D] group-hover:text-white transition-all duration-300 shadow-xs">
                     <Icon />
                   </div>
 
@@ -184,7 +351,7 @@ export const Introduction: React.FC = () => {
                     {pillar.label}
                   </span>
 
-                  <h3 className="font-heading font-bold text-xl text-[#1C242E] tracking-tight mb-3">
+                  <h3 className="font-heading font-bold text-xl sm:text-2xl text-[#1C242E] tracking-tight mb-3">
                     {pillar.title}
                   </h3>
 
@@ -212,7 +379,7 @@ export const Introduction: React.FC = () => {
               onTouchEnd={handleTouchEnd}
             >
               <motion.div
-                animate={{ x: `-${activeIndex * 100}%` }}
+                animate={{ x: `-${activePillarIndex * 100}%` }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 className="flex"
               >
@@ -245,13 +412,13 @@ export const Introduction: React.FC = () => {
               {pillars.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setActiveIndex(idx)}
+                  onClick={() => setActivePillarIndex(idx)}
                   aria-label={`Go to card ${idx + 1}`}
                   className="cursor-pointer"
                 >
                   <span
                     className={`block rounded-full transition-all duration-300 ${
-                      activeIndex === idx
+                      activePillarIndex === idx
                         ? 'w-5 h-1.5 bg-[#BE185D]'
                         : 'w-1.5 h-1.5 bg-stone-300 hover:bg-stone-400'
                     }`}

@@ -39,7 +39,7 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="hero"
-      className="relative w-full min-h-[620px] pt-32 pb-16 md:pt-36 md:pb-24 text-[#1C242E] font-sans flex items-center overflow-hidden"
+      className="relative w-full min-h-[620px] pt-32 pb-16 md:pt-24 lg:pt-28 md:pb-20 text-[#1C242E] font-sans flex items-center overflow-hidden"
     >
       {/* ── Video Background Layer ─────────────────────────────────── */}
       {/* Desktop: 16:9 video (hidden on mobile) */}
@@ -130,7 +130,7 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
             className="font-heading font-extrabold text-5xl sm:text-7xl lg:text-8xl text-[#1C242E] tracking-[-0.035em] leading-[1.02] mb-7"
           >
-            Expert Eye Care.<br />
+            Expert Surgical Eye Care.<br />
             <span className="text-stone-700">Clearer Vision.</span>
           </motion.h1>
 

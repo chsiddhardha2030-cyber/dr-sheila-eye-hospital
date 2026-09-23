@@ -18,7 +18,7 @@ export const Footer: React.FC = () => {
           {/* Col 1: Hospital Brand */}
           <div className="lg:col-span-1 flex flex-col items-start">
             <span className="font-heading font-extrabold text-xl text-white tracking-tight mb-1">
-              Dr. Sheila
+              Dr. Sheilas
             </span>
             <span className="text-[10px] font-medium tracking-[0.2em] uppercase text-rose-400 mb-4 block">
               Eye Hospitals
@@ -75,7 +75,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Line */}
         <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-          <span>&copy; {currentYear} Dr. Sheila&#39;s Eye Hospitals. All rights reserved.</span>
+          <span>&copy; {currentYear} Dr. Sheilas Eye Hospitals. All rights reserved.</span>
           <div className="flex gap-6">
             <span>Palasa &bull; Sompeta &bull; Ichapuram</span>
           </div>

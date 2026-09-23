@@ -12,7 +12,7 @@ import { Gallery } from './components/Gallery'
 import { AppointmentCTA } from './components/AppointmentCTA'
 import { Footer } from './components/Footer'
 import { WhatsAppButton } from './components/WhatsAppButton'
-import { AIChatbot } from './components/AIChatbot'
+import { FloatingAppointmentButton } from './components/FloatingAppointmentButton'
 import { AdminPortal } from './admin/AdminPortal'
 import { AuthProvider } from './context/AuthContext'
 import { HospitalDataProvider } from './context/HospitalDataContext'
@@ -67,11 +67,11 @@ function MainContent() {
       {/* 3. Editorial About: Introduction, Mission, Vision, Philosophy */}
       <Introduction />
 
-      {/* 4. Outpatient Clinical Services */}
-      <Services />
-
-      {/* 5. Dedicated Tests & Surgery Section (Diagnostics, Lasers, Surgery & Palasa OT) */}
+      {/* 4. Dedicated Tests & Surgery Section (Clinical Infrastructure: Surgery, OT, Diagnostics, Lasers) */}
       <TestsAndSurgery />
+
+      {/* 5. Outpatient & Clinical Care Services */}
+      <Services />
 
       {/* 6. Three Clinical Centers Showcase (Palasa, Sompeta, Ichapuram) with Dynamic Supabase Hours & Status */}
       <Clinics />
@@ -90,7 +90,7 @@ function MainContent() {
 
       {/* Minimal Floating Actions */}
       <WhatsAppButton />
-      <AIChatbot />
+      <FloatingAppointmentButton />
     </div>
   )
 }

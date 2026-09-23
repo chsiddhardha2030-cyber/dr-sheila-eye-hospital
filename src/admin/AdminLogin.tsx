@@ -67,7 +67,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToPublic }) => {
               <ShieldCheck size={28} />
             </div>
             <h1 className="font-heading font-extrabold text-2xl text-[#1C242E] tracking-tight">
-              Dr. Sheila Eye Hospital
+              Dr. Sheilas Eye Hospitals
             </h1>
             <p className="text-xs font-heading font-semibold uppercase tracking-widest text-[#BE185D] mt-1">
               Administrative Control Panel
@@ -155,7 +155,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToPublic }) => {
           {/* Footer note */}
           <div className="mt-6 text-center">
             <span className="text-[11px] text-[#8A96A6]">
-              Protected Administrative Area &bull; Dr. Sheila Eye Hospital
+              Protected Administrative Area &bull; Dr. Sheilas Eye Hospitals
             </span>
           </div>
         </div>

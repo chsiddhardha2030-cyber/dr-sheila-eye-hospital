@@ -253,7 +253,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <span className="font-heading font-bold text-sm sm:text-base text-[#1C242E] leading-none">
-                  Dr. Sheila Eye Hospital
+                  Dr. Sheilas Eye Hospitals
                 </span>
                 <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-heading font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
                   <ShieldCheck size={11} />

@@ -124,7 +124,7 @@ export const Services: React.FC = () => {
             Outpatient &amp; Clinical Care
           </span>
           <h2 className="font-heading font-bold text-3xl sm:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.12]">
-            Comprehensive eye-care services delivered with clinical precision.
+            Comprehensive eye-care services delivered with clinical and surgical precision.
           </h2>
         </div>
 
