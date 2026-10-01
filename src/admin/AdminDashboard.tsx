@@ -17,6 +17,23 @@ import {
 import { useAuth } from '../context/AuthContext'
 import { useHospitalData } from '../context/HospitalDataContext'
 import type { Doctor, Branch } from '../lib/database.types'
+import {
+  timeStringTo24,
+  time24ToString,
+  isValidTimeString,
+} from '../lib/doctorAvailability'
+
+// Helper to get doctor portrait image from existing project assets
+const getDoctorPortrait = (docName: string): string | null => {
+  const normalized = docName.toLowerCase()
+  if (normalized.includes('sheila') || normalized.includes('thangaraj')) {
+    return '/optimized/doctors/DSC_8246.webp'
+  }
+  if (normalized.includes('tridib') || normalized.includes('gogoi')) {
+    return '/optimized/doctors/Tridib-Doctor-portrait.png'
+  }
+  return null
+}
 
 interface AdminDashboardProps {
   onGoToPublic: () => void
@@ -33,7 +50,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
     refreshData,
     updateDoctor,
     updateBranch,
-    saveDoctorSchedule,
+    saveDoctorAndSchedule,
   } = useHospitalData()
 
   const [activeTab, setActiveTab] = useState<'doctors' | 'branches'>('doctors')
@@ -44,11 +61,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
     [id: number]: {
       current_branch: string
       available: boolean
-      saving: boolean
-      status: 'idle' | 'saved' | 'error'
-      errorMsg?: string
     }
   }>({})
+
+  // Status saving and error states for automatic doctor status toggle
+  const [doctorStatusSaving, setDoctorStatusSaving] = useState<{ [id: number]: boolean }>({})
+  const [doctorStatusError, setDoctorStatusError] = useState<{ [id: number]: string | null }>({})
 
   // Local state for doctor schedule rows editing
   const [scheduleStates, setScheduleStates] = useState<{
@@ -81,8 +99,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
     return {
       current_branch: doc.current_branch || 'Palasa',
       available: doc.available,
-      saving: false,
-      status: 'idle' as const,
     }
   }
 
@@ -97,8 +113,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
 
     return {
       is_available: found ? found.is_available : false,
-      start_time: found?.start_time || '09:00 AM',
-      end_time: found?.end_time || '05:00 PM',
+      start_time: time24ToString(found?.start_time, '09:00 AM'),
+      end_time: time24ToString(found?.end_time, '05:00 PM'),
       saving: false,
       status: 'idle' as const,
     }
@@ -109,8 +125,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
     if (branchStates[branch.id]) return branchStates[branch.id]
     return {
       is_open: branch.is_open,
-      opening_time: branch.opening_time || '09:00 AM',
-      closing_time: branch.closing_time || '08:00 PM',
+      opening_time: time24ToString(branch.opening_time, '09:00 AM'),
+      closing_time: time24ToString(branch.closing_time, '08:00 PM'),
       whatsapp_number: branch.whatsapp_number || '',
       saving: false,
       status: 'idle' as const,
@@ -123,62 +139,82 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
     setTimeout(() => setIsRefreshing(false), 500)
   }
 
-  // Save Doctor overall availability & current branch
-  const handleSaveDoctor = async (docId: number) => {
-    const doc = doctors.find((d) => d.id === docId)
-    if (!doc) return
-    const current = getDoctorState(doc)
+  // Handle Automatic Doctor Status Toggle Save
+  const handleToggleDoctorStatus = async (doc: Doctor) => {
+    const currentDocState = getDoctorState(doc)
+    const nextAvailable = !currentDocState.available
+    const prevAvailable = currentDocState.available
 
+    // Optimistically update local state for immediate feedback
     setDoctorStates((prev) => ({
       ...prev,
-      [docId]: { ...current, saving: true, status: 'idle' },
-    }))
-
-    const res = await updateDoctor(docId, {
-      current_branch: current.current_branch,
-      available: current.available,
-    })
-
-    setDoctorStates((prev) => ({
-      ...prev,
-      [docId]: {
-        ...current,
-        saving: false,
-        status: res.success ? 'saved' : 'error',
-        errorMsg: res.error,
+      [doc.id]: {
+        ...currentDocState,
+        available: nextAvailable,
       },
     }))
+    setDoctorStatusSaving((prev) => ({ ...prev, [doc.id]: true }))
+    setDoctorStatusError((prev) => ({ ...prev, [doc.id]: null }))
 
-    if (res.success) {
-      setTimeout(() => {
-        setDoctorStates((prev) => ({
-          ...prev,
-          [docId]: { ...(prev[docId] || current), status: 'idle' },
-        }))
-      }, 2500)
+    const res = await updateDoctor(doc.id, {
+      available: nextAvailable,
+      current_branch: currentDocState.current_branch,
+    })
+
+    setDoctorStatusSaving((prev) => ({ ...prev, [doc.id]: false }))
+
+    if (!res.success) {
+      // Revert if saving failed
+      setDoctorStates((prev) => ({
+        ...prev,
+        [doc.id]: {
+          ...currentDocState,
+          available: prevAvailable,
+        },
+      }))
+      setDoctorStatusError((prev) => ({
+        ...prev,
+        [doc.id]: res.error || 'Failed to update status. Reverted to previous state.',
+      }))
     }
   }
 
-  // Save specific Doctor branch schedule
+  // Save specific Doctor branch schedule & consultation timings
   const handleSaveSchedule = async (docId: number, branchName: string) => {
+    const doc = doctors.find((d) => d.id === docId)
+    if (!doc) return
+    const currentDocState = getDoctorState(doc)
     const key = `${docId}_${branchName}`
-    const current = getScheduleState(docId, branchName)
+    const currentSched = getScheduleState(docId, branchName)
+
+    // Backend/frontend enforcement: Only allow saving for the doctor's selected station when available
+    const isStation = currentDocState.current_branch.trim().toLowerCase() === branchName.trim().toLowerCase()
+    if (!isStation || !currentDocState.available) {
+      return
+    }
 
     setScheduleStates((prev) => ({
       ...prev,
-      [key]: { ...current, saving: true, status: 'idle' },
+      [key]: { ...currentSched, saving: true, status: 'idle' },
     }))
 
-    const res = await saveDoctorSchedule(docId, branchName, {
-      is_available: current.is_available,
-      start_time: current.start_time,
-      end_time: current.end_time,
-    })
+    const res = await saveDoctorAndSchedule(
+      docId,
+      branchName,
+      {
+        available: currentDocState.available,
+        current_branch: currentDocState.current_branch,
+      },
+      {
+        start_time: currentSched.start_time,
+        end_time: currentSched.end_time,
+      }
+    )
 
     setScheduleStates((prev) => ({
       ...prev,
       [key]: {
-        ...current,
+        ...currentSched,
         saving: false,
         status: res.success ? 'saved' : 'error',
         errorMsg: res.error,
@@ -189,17 +225,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
       setTimeout(() => {
         setScheduleStates((prev) => ({
           ...prev,
-          [key]: { ...(prev[key] || current), status: 'idle' },
+          [key]: { ...(prev[key] || currentSched), status: 'idle' },
         }))
       }, 2500)
     }
   }
 
-  // Save Branch details
+  // Save Branch details with validated time inputs
   const handleSaveBranch = async (branchId: number) => {
     const br = branches.find((b) => b.id === branchId)
     if (!br) return
     const current = getBranchState(br)
+
+    // Validate times
+    const validOpening = isValidTimeString(current.opening_time)
+    const validClosing = isValidTimeString(current.closing_time)
+
+    if (!validOpening || !validClosing) {
+      setBranchStates((prev) => ({
+        ...prev,
+        [branchId]: {
+          ...current,
+          saving: false,
+          status: 'error',
+          errorMsg: 'Please enter valid opening and closing times.',
+        },
+      }))
+      return
+    }
 
     setBranchStates((prev) => ({
       ...prev,
@@ -208,8 +261,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
 
     const res = await updateBranch(branchId, {
       is_open: current.is_open,
-      opening_time: current.opening_time,
-      closing_time: current.closing_time,
+      opening_time: time24ToString(current.opening_time, '09:00 AM'),
+      closing_time: time24ToString(current.closing_time, '08:00 PM'),
       whatsapp_number: current.whatsapp_number,
     })
 
@@ -386,10 +439,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
           <div className="space-y-8">
             <div className="flex flex-col gap-1">
               <h2 className="font-heading font-bold text-xl text-[#1C242E]">
-                Doctor Availability &amp; Branch Schedules
+                Doctor Availability &amp; Consultation Timings
               </h2>
               <p className="text-xs sm:text-sm text-[#5A687A]">
-                Configure each surgeon's overall active status, current consulting branch, and branch-specific hours.
+                Select a doctor's active status and consulting station. Only the selected station's schedule is editable.
               </p>
             </div>
 
@@ -401,6 +454,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
               <div className="grid grid-cols-1 gap-8">
                 {doctors.map((doc) => {
                   const state = getDoctorState(doc)
+                  const portraitSrc = getDoctorPortrait(doc.name)
+                  const isSavingStatus = Boolean(doctorStatusSaving[doc.id])
+                  const statusErrMsg = doctorStatusError[doc.id]
 
                   return (
                     <div
@@ -419,10 +475,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
                       {/* Doctor Header & Overall Status */}
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-[#E8E2D8]">
                         
-                        {/* Doctor Name & Current Badge */}
+                        {/* Doctor Name, Portrait & Current Badge */}
                         <div className="flex items-start sm:items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D] font-bold text-lg shrink-0">
-                            {doc.name.replace('Dr. ', '').charAt(0)}
+                          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F4] border border-[#E8E2D8] flex items-center justify-center text-[#BE185D] font-bold text-lg shrink-0 overflow-hidden shadow-xs">
+                            {portraitSrc ? (
+                              <img
+                                src={portraitSrc}
+                                alt={doc.name}
+                                className="w-full h-full object-cover object-top"
+                              />
+                            ) : (
+                              <span>{doc.name.replace('Dr. ', '').charAt(0)}</span>
+                            )}
                           </div>
                           <div>
                             <div className="flex items-center gap-2.5 flex-wrap">
@@ -436,119 +500,119 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
                                     : 'bg-stone-100 text-stone-600 border-stone-200'
                                 }`}
                               >
-                                {state.available ? '● Available Today' : '○ Unavailable / Off-Duty'}
+                                {state.available ? '● Available' : '○ Unavailable'}
                               </span>
                             </div>
                             <p className="text-xs text-[#5A687A] mt-1 flex items-center gap-1.5">
                               <MapPin size={12} className="text-[#BE185D]" />
-                              <span>Current Branch Station: <strong>{state.current_branch}</strong></span>
+                              <span>
+                                Stationed at <strong>{state.current_branch}</strong>
+                              </span>
                             </p>
                           </div>
                         </div>
 
                         {/* Overall Doctor Controls */}
-                        <div className="flex flex-wrap items-center gap-4 bg-[#FAF8F5] p-4 rounded-2xl border border-[#E8E2D8]">
-                          
-                          {/* Availability Toggle Switch */}
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs font-heading font-semibold text-[#1C242E]">
-                              Doctor Status:
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDoctorStates((prev) => ({
-                                  ...prev,
-                                  [doc.id]: {
-                                    ...state,
-                                    available: !state.available,
-                                  },
-                                }))
-                              }}
-                              className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                state.available ? 'bg-emerald-500' : 'bg-stone-300'
-                              }`}
-                            >
-                              <span
-                                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                  state.available ? 'translate-x-7' : 'translate-x-0'
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-wrap items-center gap-4 bg-[#FAF8F5] p-4 rounded-2xl border border-[#E8E2D8]">
+                            
+                            {/* Availability Toggle Switch (Automatic Save) */}
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-heading font-semibold text-[#1C242E]">
+                                Doctor Status:
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleDoctorStatus(doc)}
+                                disabled={isSavingStatus}
+                                aria-label={`Toggle availability for ${doc.name}`}
+                                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-60 ${
+                                  state.available ? 'bg-emerald-500' : 'bg-stone-300'
                                 }`}
-                              />
-                            </button>
-                            <span className={`text-xs font-bold ${state.available ? 'text-emerald-700' : 'text-stone-500'}`}>
-                              {state.available ? 'Available' : 'Unavailable'}
-                            </span>
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                    state.available ? 'translate-x-7' : 'translate-x-0'
+                                  }`}
+                                />
+                              </button>
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs font-bold ${state.available ? 'text-emerald-700' : 'text-stone-500'}`}>
+                                  {state.available ? 'Available' : 'Unavailable'}
+                                </span>
+                                {isSavingStatus && (
+                                  <span className="text-[11px] text-[#5A687A] flex items-center gap-1">
+                                    <RefreshCw size={11} className="animate-spin text-[#BE185D]" />
+                                    <span>Saving...</span>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="h-6 w-px bg-[#E8E2D8] hidden sm:block" />
+
+                            {/* Current Branch Dropdown (Disabled when Doctor is Unavailable) */}
+                            <div className="flex items-center gap-2">
+                              <label className={`text-xs font-heading font-semibold whitespace-nowrap ${state.available ? 'text-[#1C242E]' : 'text-stone-400'}`}>
+                                Branch:
+                              </label>
+                              <select
+                                value={state.current_branch}
+                                disabled={!state.available}
+                                onChange={(e) => {
+                                  setDoctorStates((prev) => ({
+                                    ...prev,
+                                    [doc.id]: {
+                                      ...state,
+                                      current_branch: e.target.value,
+                                    },
+                                  }))
+                                }}
+                                title={
+                                  !state.available
+                                    ? 'Doctor is Unavailable. Switch Doctor Status to Available to change branch.'
+                                    : 'Select active consulting branch'
+                                }
+                                className={`border rounded-xl px-3 py-1.5 text-xs font-semibold outline-none shadow-xs transition-all ${
+                                  state.available
+                                    ? 'bg-white border-[#E8E2D8] text-[#1C242E] focus:border-[#BE185D] cursor-pointer'
+                                    : 'bg-stone-100 border-stone-200 text-stone-400 cursor-not-allowed opacity-75'
+                                }`}
+                              >
+                                {branchNameList.map((bName) => (
+                                  <option key={bName} value={bName}>
+                                    {bName}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
                           </div>
 
-                          <div className="h-6 w-px bg-[#E8E2D8] hidden sm:block" />
-
-                          {/* Current Branch Dropdown */}
-                          <div className="flex items-center gap-2">
-                            <label className="text-xs font-heading font-semibold text-[#1C242E] whitespace-nowrap">
-                              Branch:
-                            </label>
-                            <select
-                              value={state.current_branch}
-                              onChange={(e) => {
-                                setDoctorStates((prev) => ({
-                                  ...prev,
-                                  [doc.id]: {
-                                    ...state,
-                                    current_branch: e.target.value,
-                                  },
-                                }))
-                              }}
-                              className="bg-white border border-[#E8E2D8] rounded-xl px-3 py-1.5 text-xs font-semibold text-[#1C242E] focus:border-[#BE185D] outline-none shadow-xs"
-                            >
-                              {branchNameList.map((bName) => (
-                                <option key={bName} value={bName}>
-                                  {bName}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-
-                          {/* Save Doctor Button */}
-                          <button
-                            type="button"
-                            onClick={() => handleSaveDoctor(doc.id)}
-                            disabled={state.saving}
-                            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white font-heading font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs disabled:opacity-60 ${
-                              state.status === 'saved'
-                                ? 'bg-emerald-600'
-                                : state.status === 'error'
-                                ? 'bg-rose-600'
-                                : 'bg-[#BE185D] hover:bg-[#9F1239]'
-                            }`}
-                          >
-                            {state.saving ? (
-                              <>
-                                <RefreshCw size={12} className="animate-spin" />
-                                <span>Saving...</span>
-                              </>
-                            ) : state.status === 'saved' ? (
-                              <>
-                                <Check size={12} />
-                                <span>Saved!</span>
-                              </>
-                            ) : (
-                              <>
-                                <Save size={12} />
-                                <span>Save Doctor</span>
-                              </>
-                            )}
-                          </button>
-
+                          {/* Status Error Display if Save Failed */}
+                          {statusErrMsg && (
+                            <div className="text-[11px] text-rose-600 font-medium px-1 flex items-center gap-1">
+                              <AlertCircle size={12} />
+                              <span>{statusErrMsg}</span>
+                            </div>
+                          )}
                         </div>
 
                       </div>
 
-                      {/* Branch-wise Schedules Section */}
+                      {/* Branch Consultation Schedules Section */}
                       <div className="pt-6">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                           <span className="text-xs font-heading font-semibold uppercase tracking-wider text-[#5A687A] flex items-center gap-1.5">
                             <Clock size={13} className="text-[#BE185D]" />
-                            <span>Branch-wise Consultation Schedules (doctor_schedule table)</span>
+                            <span>Branch Consultation Timings</span>
+                          </span>
+
+                          <span className="text-[11px] font-medium text-[#8A96A6]">
+                            <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                              Stationed at <strong>{state.current_branch}</strong>
+                            </span>
                           </span>
                         </div>
 
@@ -556,117 +620,150 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
                           {branchNameList.map((bName) => {
                             const schedState = getScheduleState(doc.id, bName)
                             const schedKey = `${doc.id}_${bName}`
+                            
+                            // Station rules:
+                            const isSelectedStation = state.current_branch.trim().toLowerCase() === bName.trim().toLowerCase()
+                            const isEditable = Boolean(state.available && isSelectedStation)
 
                             return (
                               <div
                                 key={bName}
-                                className={`p-4 rounded-2xl border transition-all ${
-                                  schedState.is_available
-                                    ? 'bg-[#FAF8F5] border-emerald-200/80 shadow-xs'
-                                    : 'bg-stone-50/70 border-stone-200 opacity-90'
+                                className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+                                  isEditable
+                                    ? 'bg-[#FAF8F5] border-emerald-300 ring-2 ring-emerald-500/15 shadow-sm'
+                                    : 'bg-stone-50/60 border-stone-200 opacity-75'
                                 }`}
                               >
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className="flex items-center gap-1.5">
-                                    <MapPin size={13} className="text-[#BE185D]" />
-                                    <span className="font-heading font-bold text-sm text-[#1C242E]">
-                                      {bName}
+                                <div>
+                                  {/* Branch Title & Status Badge */}
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-1.5">
+                                      <MapPin
+                                        size={13}
+                                        className={isEditable ? 'text-[#BE185D]' : 'text-stone-400'}
+                                      />
+                                      <span className={`font-heading font-bold text-sm ${isEditable ? 'text-[#1C242E]' : 'text-stone-600'}`}>
+                                        {bName}
+                                      </span>
+                                    </div>
+
+                                    {/* Branch Badge */}
+                                    <span
+                                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-heading font-bold border ${
+                                        isEditable
+                                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                          : 'bg-stone-100 text-stone-500 border-stone-200'
+                                      }`}
+                                    >
+                                      {isEditable ? '● Active Station' : 'Read-only'}
                                     </span>
                                   </div>
 
-                                  {/* Available Toggle */}
+                                  {/* Timings Inputs (HTML5 controlled time inputs) */}
+                                  <div className="space-y-2.5 mb-4">
+                                    {/* Start Time */}
+                                    <div>
+                                      <div className="flex items-center justify-between mb-1">
+                                        <label className={`text-[11px] font-medium ${isEditable ? 'text-[#5A687A]' : 'text-stone-400'}`}>
+                                          Start Time:
+                                        </label>
+                                        <span className="text-[10px] font-semibold text-[#8A96A6]">
+                                          {schedState.start_time}
+                                        </span>
+                                      </div>
+                                      <input
+                                        type="time"
+                                        value={timeStringTo24(schedState.start_time, '09:00')}
+                                        disabled={!isEditable}
+                                        onChange={(e) => {
+                                          const new12 = time24ToString(e.target.value, '09:00 AM')
+                                          setScheduleStates((prev) => ({
+                                            ...prev,
+                                            [schedKey]: {
+                                              ...schedState,
+                                              start_time: new12,
+                                            },
+                                          }))
+                                        }}
+                                        className={`w-full rounded-lg px-2.5 py-1.5 text-xs font-semibold outline-none border transition-colors ${
+                                          isEditable
+                                            ? 'bg-white border-[#E8E2D8] text-[#1C242E] focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D]/20 cursor-pointer'
+                                            : 'bg-stone-100 border-stone-200 text-stone-400 cursor-not-allowed select-none'
+                                        }`}
+                                      />
+                                    </div>
+
+                                    {/* End Time */}
+                                    <div>
+                                      <div className="flex items-center justify-between mb-1">
+                                        <label className={`text-[11px] font-medium ${isEditable ? 'text-[#5A687A]' : 'text-stone-400'}`}>
+                                          End Time:
+                                        </label>
+                                        <span className="text-[10px] font-semibold text-[#8A96A6]">
+                                          {schedState.end_time}
+                                        </span>
+                                      </div>
+                                      <input
+                                        type="time"
+                                        value={timeStringTo24(schedState.end_time, '17:00')}
+                                        disabled={!isEditable}
+                                        onChange={(e) => {
+                                          const new12 = time24ToString(e.target.value, '05:00 PM')
+                                          setScheduleStates((prev) => ({
+                                            ...prev,
+                                            [schedKey]: {
+                                              ...schedState,
+                                              end_time: new12,
+                                            },
+                                          }))
+                                        }}
+                                        className={`w-full rounded-lg px-2.5 py-1.5 text-xs font-semibold outline-none border transition-colors ${
+                                          isEditable
+                                            ? 'bg-white border-[#E8E2D8] text-[#1C242E] focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D]/20 cursor-pointer'
+                                            : 'bg-stone-100 border-stone-200 text-stone-400 cursor-not-allowed select-none'
+                                        }`}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Action: Save Schedule (Editable Branch) or Read-only block */}
+                                {isEditable ? (
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      setScheduleStates((prev) => ({
-                                        ...prev,
-                                        [schedKey]: {
-                                          ...schedState,
-                                          is_available: !schedState.is_available,
-                                        },
-                                      }))
-                                    }}
-                                    className={`px-2.5 py-1 rounded-full text-[10px] font-heading font-bold cursor-pointer transition-colors ${
-                                      schedState.is_available
-                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                        : 'bg-stone-200 text-stone-600 border border-stone-300'
+                                    onClick={() => handleSaveSchedule(doc.id, bName)}
+                                    disabled={schedState.saving}
+                                    className={`w-full py-2 rounded-xl text-white font-heading font-bold text-[11px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-60 ${
+                                      schedState.status === 'saved'
+                                        ? 'bg-emerald-600'
+                                        : schedState.status === 'error'
+                                        ? 'bg-rose-600'
+                                        : 'bg-[#BE185D] hover:bg-[#9F1239]'
                                     }`}
                                   >
-                                    {schedState.is_available ? 'Available' : 'Unavailable'}
+                                    {schedState.saving ? (
+                                      <>
+                                        <RefreshCw size={11} className="animate-spin" />
+                                        <span>Saving...</span>
+                                      </>
+                                    ) : schedState.status === 'saved' ? (
+                                      <>
+                                        <Check size={11} />
+                                        <span>Saved Successfully!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Save size={11} />
+                                        <span>Save Schedule</span>
+                                      </>
+                                    )}
                                   </button>
-                                </div>
-
-                                {/* Timings Inputs */}
-                                <div className="space-y-2 mb-3">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <label className="text-[11px] text-[#5A687A]">Start Time:</label>
-                                    <input
-                                      type="text"
-                                      value={schedState.start_time}
-                                      onChange={(e) => {
-                                        setScheduleStates((prev) => ({
-                                          ...prev,
-                                          [schedKey]: {
-                                            ...schedState,
-                                            start_time: e.target.value,
-                                          },
-                                        }))
-                                      }}
-                                      placeholder="09:00 AM"
-                                      className="w-24 bg-white border border-[#E8E2D8] rounded-lg px-2 py-1 text-xs text-[#1C242E] font-medium outline-none focus:border-[#BE185D]"
-                                    />
+                                ) : (
+                                  <div className="w-full py-2 rounded-xl bg-stone-100 text-stone-500 font-heading font-semibold text-[11px] flex items-center justify-center border border-stone-200 select-none">
+                                    Read-only
                                   </div>
+                                )}
 
-                                  <div className="flex items-center justify-between gap-2">
-                                    <label className="text-[11px] text-[#5A687A]">End Time:</label>
-                                    <input
-                                      type="text"
-                                      value={schedState.end_time}
-                                      onChange={(e) => {
-                                        setScheduleStates((prev) => ({
-                                          ...prev,
-                                          [schedKey]: {
-                                            ...schedState,
-                                            end_time: e.target.value,
-                                          },
-                                        }))
-                                      }}
-                                      placeholder="05:00 PM"
-                                      className="w-24 bg-white border border-[#E8E2D8] rounded-lg px-2 py-1 text-xs text-[#1C242E] font-medium outline-none focus:border-[#BE185D]"
-                                    />
-                                  </div>
-                                </div>
-
-                                {/* Save Schedule Button */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleSaveSchedule(doc.id, bName)}
-                                  disabled={schedState.saving}
-                                  className={`w-full py-1.5 rounded-lg text-white font-heading font-bold text-[11px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-60 ${
-                                    schedState.status === 'saved'
-                                      ? 'bg-emerald-600'
-                                      : schedState.status === 'error'
-                                      ? 'bg-rose-600'
-                                      : 'bg-[#1C242E] hover:bg-stone-800'
-                                  }`}
-                                >
-                                  {schedState.saving ? (
-                                    <>
-                                      <RefreshCw size={11} className="animate-spin" />
-                                      <span>Saving...</span>
-                                    </>
-                                  ) : schedState.status === 'saved' ? (
-                                    <>
-                                      <Check size={11} />
-                                      <span>Saved!</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Save size={11} />
-                                      <span>Save Schedule</span>
-                                    </>
-                                  )}
-                                </button>
                               </div>
                             )
                           })}
@@ -778,49 +875,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
                           </div>
                         </div>
 
-                        {/* Branch Form Fields */}
+                        {/* Branch Form Fields with controlled HTML5 time inputs */}
                         <div className="space-y-3 mb-6">
                           <div>
-                            <label className="block text-[11px] font-heading font-semibold text-[#5A687A] mb-1 flex items-center gap-1">
-                              <Clock size={12} className="text-[#BE185D]" />
-                              <span>Opening Time</span>
-                            </label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[11px] font-heading font-semibold text-[#5A687A] flex items-center gap-1">
+                                <Clock size={12} className="text-[#BE185D]" />
+                                <span>Opening Time</span>
+                              </label>
+                              <span className="text-[10px] font-semibold text-[#8A96A6]">
+                                {state.opening_time}
+                              </span>
+                            </div>
                             <input
-                              type="text"
-                              value={state.opening_time}
+                              type="time"
+                              value={timeStringTo24(state.opening_time, '09:00')}
                               onChange={(e) => {
+                                const new12 = time24ToString(e.target.value, '09:00 AM')
                                 setBranchStates((prev) => ({
                                   ...prev,
                                   [branch.id]: {
                                     ...state,
-                                    opening_time: e.target.value,
+                                    opening_time: new12,
                                   },
                                 }))
                               }}
-                              placeholder="09:00 AM"
-                              className="w-full bg-[#FAF8F5] border border-[#E8E2D8] rounded-xl px-3 py-2 text-xs text-[#1C242E] font-medium outline-none focus:bg-white focus:border-[#BE185D]"
+                              className="w-full bg-[#FAF8F5] border border-[#E8E2D8] rounded-xl px-3 py-2 text-xs text-[#1C242E] font-medium outline-none focus:bg-white focus:border-[#BE185D] cursor-pointer"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-[11px] font-heading font-semibold text-[#5A687A] mb-1 flex items-center gap-1">
-                              <Clock size={12} className="text-[#BE185D]" />
-                              <span>Closing Time</span>
-                            </label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[11px] font-heading font-semibold text-[#5A687A] flex items-center gap-1">
+                                <Clock size={12} className="text-[#BE185D]" />
+                                <span>Closing Time</span>
+                              </label>
+                              <span className="text-[10px] font-semibold text-[#8A96A6]">
+                                {state.closing_time}
+                              </span>
+                            </div>
                             <input
-                              type="text"
-                              value={state.closing_time}
+                              type="time"
+                              value={timeStringTo24(state.closing_time, '20:00')}
                               onChange={(e) => {
+                                const new12 = time24ToString(e.target.value, '08:00 PM')
                                 setBranchStates((prev) => ({
                                   ...prev,
                                   [branch.id]: {
                                     ...state,
-                                    closing_time: e.target.value,
+                                    closing_time: new12,
                                   },
                                 }))
                               }}
-                              placeholder="08:00 PM"
-                              className="w-full bg-[#FAF8F5] border border-[#E8E2D8] rounded-xl px-3 py-2 text-xs text-[#1C242E] font-medium outline-none focus:bg-white focus:border-[#BE185D]"
+                              className="w-full bg-[#FAF8F5] border border-[#E8E2D8] rounded-xl px-3 py-2 text-xs text-[#1C242E] font-medium outline-none focus:bg-white focus:border-[#BE185D] cursor-pointer"
                             />
                           </div>
 

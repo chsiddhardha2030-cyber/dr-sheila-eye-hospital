@@ -66,9 +66,9 @@ export const Footer: React.FC = () => {
             <span className="font-heading font-semibold text-xs text-white uppercase tracking-wider mb-2">
               Contact
             </span>
-            <span className="text-xs text-slate-300">Palasa Main: 08945-242442</span>
-            <span className="text-xs text-slate-300">Helpline: +91 94936 61180</span>
-            <span className="text-xs text-slate-300">Direct: 9493661180</span>
+            <span className="text-xs text-slate-300">Palasa: 08945-242442</span>
+            <span className="text-xs text-slate-300">Sompeta: 08947-234108 </span>
+            <span className="text-xs text-slate-300">Ichapuram: 08947-231261</span>
           </div>
 
         </div>

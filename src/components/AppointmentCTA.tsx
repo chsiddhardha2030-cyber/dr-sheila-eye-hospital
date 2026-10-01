@@ -13,6 +13,12 @@ import {
 import { FaWhatsapp } from 'react-icons/fa6'
 import { useHospitalData } from '../context/HospitalDataContext'
 import type { Branch } from '../lib/database.types'
+import {
+  isDoctorAvailable,
+  getDoctorCurrentBranch,
+  getDoctorAvailableBranches,
+  getDoctorBranchSchedule,
+} from '../lib/doctorAvailability'
 
 // Helper to parse time strings like "10:00 AM", "10:00 PM", "10:00", "22:00", "09:30", "10:00:00", "22:00:00+05:30" to minutes from midnight
 const parseTimeToMinutes = (timeStr: string | null | undefined): number | null => {
@@ -128,81 +134,53 @@ export const AppointmentCTA: React.FC = () => {
     return doctors.find((d) => String(d.id) === String(formData.doctorId)) || null
   }, [doctors, formData.doctorId])
 
-  // Determine available schedules for selected doctor
-  const availableSchedules = useMemo(() => {
-    if (!selectedDoctor) return []
-    return schedules.filter(
-      (s) => s.doctor_id === selectedDoctor.id && s.is_available === true
-    )
-  }, [schedules, selectedDoctor])
+  const isDocAvail = useMemo(() => isDoctorAvailable(selectedDoctor), [selectedDoctor])
 
-  // Determine available branches based on doctor schedule
+  // Determine available branches based on canonical availability hierarchy
   const availableBranches = useMemo(() => {
-    return availableSchedules.map((s) => {
-      const branchInfo = branches.find(
-        (b) => b.name.toLowerCase() === s.branch_name.toLowerCase()
-      )
-      return {
-        name: s.branch_name,
-        schedule: s,
-        branchInfo,
-      }
-    })
-  }, [availableSchedules, branches])
+    if (!selectedDoctor || !isDocAvail) return []
+    return getDoctorAvailableBranches(selectedDoctor, branches, schedules)
+  }, [selectedDoctor, isDocAvail, branches, schedules])
 
   // Selected branch object from Supabase branches table
   const selectedBranchObj = useMemo(() => {
     if (!formData.branch) return null
     return branches.find(
-      (b) => b.name.toLowerCase() === formData.branch.toLowerCase()
+      (b) => b.name.trim().toLowerCase() === formData.branch.trim().toLowerCase()
     ) || null
   }, [branches, formData.branch])
 
   // Automatically update branch when doctor selection changes
   useEffect(() => {
-    if (!formData.doctorId) {
+    if (!formData.doctorId || !isDocAvail || availableBranches.length === 0) {
       setFormData((prev) => (prev.branch ? { ...prev, branch: '' } : prev))
       return
     }
 
     if (availableBranches.length === 1) {
-      // Automatically select the single available branch
+      // Automatically select the single active available branch
       setFormData((prev) => ({
         ...prev,
         branch: availableBranches[0].name,
       }))
-    } else if (availableBranches.length > 1) {
-      // If currently selected branch is still valid in available branches, keep it
+    } else {
       const isValid = availableBranches.some(
         (b) => b.name.toLowerCase() === formData.branch.toLowerCase()
       )
       if (!isValid) {
         setFormData((prev) => ({
           ...prev,
-          branch: '',
+          branch: availableBranches[0]?.name || '',
         }))
       }
-    } else {
-      // 0 available branches
-      setFormData((prev) => ({
-        ...prev,
-        branch: '',
-      }))
     }
-  }, [formData.doctorId, availableBranches])
+  }, [formData.doctorId, isDocAvail, availableBranches])
 
   // Active schedule for selected doctor and selected branch
   const activeSchedule = useMemo(() => {
-    if (!selectedDoctor || !formData.branch) return null
-    return (
-      schedules.find(
-        (s) =>
-          s.doctor_id === selectedDoctor.id &&
-          s.branch_name.toLowerCase() === formData.branch.toLowerCase() &&
-          s.is_available === true
-      ) || null
-    )
-  }, [schedules, selectedDoctor, formData.branch])
+    if (!selectedDoctor || !formData.branch || !isDocAvail) return null
+    return getDoctorBranchSchedule(selectedDoctor.id, formData.branch, selectedDoctor, schedules)
+  }, [selectedDoctor, formData.branch, isDocAvail, schedules])
 
   // Compute today's date string YYYY-MM-DD
   const todayString = useMemo(() => {
@@ -367,9 +345,9 @@ export const AppointmentCTA: React.FC = () => {
     }
 
     // 2. Validate Doctor Availability
-    if (availableBranches.length === 0) {
+    if (!isDocAvail || availableBranches.length === 0) {
       setGeneralError(
-        `Dr. ${selectedDoctor.name} is currently not scheduled or available at any branch. Please select another doctor or contact reception.`
+        `Dr. ${selectedDoctor.name} is currently off-duty and unavailable for appointments at any hospital branch. Please select another doctor or contact reception.`
       )
       return
     }
@@ -610,11 +588,15 @@ export const AppointmentCTA: React.FC = () => {
                           ? 'Loading Doctors...'
                           : 'Select Doctor'}
                       </option>
-                      {doctors.map((doc) => (
-                        <option key={doc.id} value={doc.id} className="text-[#1C242E] bg-white font-medium">
-                          {doc.name}
-                        </option>
-                      ))}
+                      {doctors.map((doc) => {
+                        const isAvail = isDoctorAvailable(doc)
+                        const currentBranch = getDoctorCurrentBranch(doc)
+                        return (
+                          <option key={doc.id} value={doc.id} className="text-[#1C242E] bg-white font-medium">
+                            {doc.name} {isAvail ? `(Available - ${currentBranch} Center)` : '(Off-Duty)'}
+                          </option>
+                        )
+                      })}
                     </select>
                   </div>
 
@@ -629,7 +611,7 @@ export const AppointmentCTA: React.FC = () => {
                       value={formData.branch}
                       onChange={handleInputChange}
                       required
-                      disabled={!formData.doctorId || availableBranches.length === 0}
+                      disabled={!formData.doctorId || !isDocAvail || availableBranches.length === 0}
                       className={`w-full bg-white border border-[#E8E2D8] rounded-xl px-4 py-3 text-sm font-medium ${
                         formData.branch ? 'text-[#1C242E]' : 'text-[#8A96A6]'
                       } focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors cursor-pointer shadow-xs disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed`}
@@ -638,25 +620,16 @@ export const AppointmentCTA: React.FC = () => {
                         <option value="" disabled className="text-[#8A96A6] bg-[#FAF8F5]">
                           Select a Doctor first
                         </option>
-                      ) : availableBranches.length === 0 ? (
+                      ) : !isDocAvail || availableBranches.length === 0 ? (
                         <option value="" disabled className="text-[#8A96A6] bg-[#FAF8F5]">
-                          No branch schedules available
-                        </option>
-                      ) : availableBranches.length === 1 ? (
-                        <option value={availableBranches[0].name} className="text-[#1C242E] bg-white font-medium">
-                          {availableBranches[0].name} Center (Available)
+                          Doctor is currently Unavailable / Off-Duty
                         </option>
                       ) : (
-                        <>
-                          <option value="" disabled className="text-[#8A96A6] bg-[#FAF8F5]">
-                            Select Available Branch ({availableBranches.length} locations)
+                        availableBranches.map((ab) => (
+                          <option key={ab.name} value={ab.name} className="text-[#1C242E] bg-white font-medium">
+                            {ab.name} Center (Available Today)
                           </option>
-                          {availableBranches.map((ab) => (
-                            <option key={ab.name} value={ab.name} className="text-[#1C242E] bg-white font-medium">
-                              {ab.name} Center
-                            </option>
-                          ))}
-                        </>
+                        ))
                       )}
                     </select>
                   </div>
@@ -664,16 +637,16 @@ export const AppointmentCTA: React.FC = () => {
                 </div>
 
                 {/* Doctor Availability Notice / Active Hours Chip */}
-                {selectedDoctor && availableBranches.length === 0 && (
+                {selectedDoctor && (!isDocAvail || availableBranches.length === 0) && (
                   <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
                     <AlertCircle size={15} className="shrink-0 text-rose-600" />
                     <span>
-                      <strong>{selectedDoctor.name}</strong> is currently unavailable for outpatient consultations at all branches. Please select another doctor or contact hospital reception.
+                      <strong>{selectedDoctor.name}</strong> is currently off-duty and unavailable for outpatient consultations across all hospital branches. Please select another doctor or contact hospital reception.
                     </span>
                   </div>
                 )}
 
-                {activeSchedule && (
+                {isDocAvail && activeSchedule && (
                   <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 size={14} className="shrink-0 text-emerald-600" />

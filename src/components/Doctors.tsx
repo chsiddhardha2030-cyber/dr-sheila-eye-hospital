@@ -2,9 +2,14 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { Award, Stethoscope, MapPin, Clock } from 'lucide-react'
 import { useHospitalData } from '../context/HospitalDataContext'
+import {
+  isDoctorAvailable,
+  getDoctorCurrentBranch,
+  getDoctorBranchSchedule,
+} from '../lib/doctorAvailability'
 
 export const Doctors: React.FC = () => {
-  const { doctors: dbDoctors, schedules } = useHospitalData()
+  const { doctors: dbDoctors, branches, schedules } = useHospitalData()
 
   const staticDoctors = [
     {
@@ -51,17 +56,17 @@ export const Doctors: React.FC = () => {
               staticDoc.name.toLowerCase().includes(d.name.toLowerCase().replace('dr. ', ''))
             )
 
-            const isAvailable = dbDoc ? dbDoc.available : true
-            const currentBranch = dbDoc?.current_branch || 'Palasa'
-
-            // Find current branch schedule
-            const currentSchedule = dbDoc
-              ? schedules.find(
-                  (s) =>
-                    s.doctor_id === dbDoc.id &&
-                    s.branch_name.toLowerCase() === currentBranch.toLowerCase()
-                )
+            const isAvailable = isDoctorAvailable(dbDoc)
+            const currentBranch = getDoctorCurrentBranch(dbDoc)
+            const branchObj = branches.find(
+              (b) => b.name.toLowerCase() === currentBranch.toLowerCase()
+            )
+            const isBranchOpen = branchObj ? branchObj.is_open : true
+            const scheduleInfo = dbDoc
+              ? getDoctorBranchSchedule(dbDoc.id, currentBranch, dbDoc, schedules, branches)
               : null
+
+            const isDoctorActiveToday = isAvailable && isBranchOpen
 
             return (
               <motion.div
@@ -102,12 +107,18 @@ export const Doctors: React.FC = () => {
                       {/* Dynamic Availability Status Badge */}
                       <span
                         className={`text-[10px] font-heading font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border ${
-                          isAvailable
+                          isDoctorActiveToday
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : isAvailable && !isBranchOpen
+                            ? 'bg-amber-50 text-amber-800 border-amber-200'
                             : 'bg-stone-100 text-stone-600 border-stone-200'
                         }`}
                       >
-                        {isAvailable ? '● Available' : '○ Off-Duty'}
+                        {isDoctorActiveToday
+                          ? '● Available'
+                          : isAvailable && !isBranchOpen
+                          ? `○ ${currentBranch} Center Closed`
+                          : '○ Off-Duty'}
                       </span>
                     </div>
 
@@ -120,18 +131,33 @@ export const Doctors: React.FC = () => {
                     </p>
 
                     {/* Dynamic Location & Timings Indicator */}
-                    {isAvailable && (
+                    {isDoctorActiveToday ? (
                       <div className="mb-4 p-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D8] text-xs text-[#5A687A] flex flex-col gap-1.5 text-left">
                         <div className="flex items-center gap-1.5 text-[#1C242E] font-medium">
                           <MapPin size={13} className="text-[#BE185D] shrink-0" />
                           <span>Stationed Today: <strong>{currentBranch} Center</strong></span>
                         </div>
-                        {currentSchedule && currentSchedule.start_time && (
+                        {scheduleInfo && scheduleInfo.start_time && (
                           <div className="flex items-center gap-1.5 text-[11px] text-[#5A687A]">
                             <Clock size={12} className="text-[#BE185D] shrink-0" />
-                            <span>OPD Hours: {currentSchedule.start_time} – {currentSchedule.end_time || '05:00 PM'}</span>
+                            <span>OPD Hours: {scheduleInfo.start_time} – {scheduleInfo.end_time || '05:00 PM'}</span>
                           </div>
                         )}
+                      </div>
+                    ) : isAvailable && !isBranchOpen ? (
+                      <div className="mb-4 p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/70 text-xs text-amber-900 flex flex-col gap-1 text-left">
+                        <div className="flex items-center gap-1.5 font-medium">
+                          <MapPin size={13} className="text-amber-700 shrink-0" />
+                          <span>Stationed: <strong>{currentBranch} Center</strong></span>
+                        </div>
+                        <span className="text-[11px] text-amber-800">
+                          {currentBranch} Center is marked as closed today. Consultations resume when the center opens.
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="mb-4 p-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-500 flex items-center gap-2 text-left">
+                        <Clock size={13} className="text-stone-400 shrink-0" />
+                        <span>Currently Off-Duty across all hospital branches</span>
                       </div>
                     )}
                   </div>

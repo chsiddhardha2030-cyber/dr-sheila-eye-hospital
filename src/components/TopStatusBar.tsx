@@ -1,6 +1,7 @@
 import React from 'react'
 import { MapPin, Stethoscope, Lock } from 'lucide-react'
 import { useHospitalData } from '../context/HospitalDataContext'
+import { isDoctorAvailable, getDoctorCurrentBranch } from '../lib/doctorAvailability'
 
 interface TopStatusBarProps {
   onNavigateToAdmin?: () => void
@@ -49,18 +50,31 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({ onNavigateToAdmin })
           <div className="hidden lg:flex items-center gap-3 text-stone-300">
             <Stethoscope size={13} className="text-rose-400" />
             <div className="flex items-center gap-3">
-              {doctors.map((doc) => (
-                <span key={doc.id} className="inline-flex items-center gap-1">
-                  <strong className="text-white">{doc.name.replace('Dr. ', 'Dr. ')}:</strong>
-                  {doc.available ? (
-                    <span className="text-emerald-300">
-                      Available ({doc.current_branch || 'Palasa'})
-                    </span>
-                  ) : (
-                    <span className="text-stone-400">Off-duty</span>
-                  )}
-                </span>
-              ))}
+              {doctors.map((doc) => {
+                const isAvail = isDoctorAvailable(doc)
+                const currentBranch = getDoctorCurrentBranch(doc)
+                const branchObj = branches.find(
+                  (b) => b.name.toLowerCase() === currentBranch.toLowerCase()
+                )
+                const isBranchOpen = branchObj ? branchObj.is_open : true
+
+                return (
+                  <span key={doc.id} className="inline-flex items-center gap-1">
+                    <strong className="text-white">{doc.name}:</strong>
+                    {isAvail && isBranchOpen ? (
+                      <span className="text-emerald-300">
+                        Available ({currentBranch})
+                      </span>
+                    ) : isAvail && !isBranchOpen ? (
+                      <span className="text-amber-300">
+                        {currentBranch} (Closed)
+                      </span>
+                    ) : (
+                      <span className="text-stone-400">Off-duty</span>
+                    )}
+                  </span>
+                )
+              })}
             </div>
           </div>
 
