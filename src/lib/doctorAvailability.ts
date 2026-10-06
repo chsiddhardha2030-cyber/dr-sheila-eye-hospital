@@ -1,5 +1,46 @@
 import type { Doctor, Branch, DoctorSchedule } from './database.types'
 
+export const DAYS_OF_WEEK = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+] as const
+
+export type DayOfWeek = (typeof DAYS_OF_WEEK)[number]
+
+export const HOSPITAL_BRANCHES = ['Palasa', 'Sompeta', 'Ichapuram'] as const
+export type HospitalBranchName = (typeof HOSPITAL_BRANCHES)[number]
+
+/**
+ * Default fallback weekly branch allocations if none are stored in the database.
+ */
+export const DEFAULT_WEEKLY_SCHEDULES: Record<number, Record<DayOfWeek, string>> = {
+  1: {
+    // Dr. Sheila Thangaraj
+    Monday: 'Palasa',
+    Tuesday: 'Palasa',
+    Wednesday: 'Sompeta',
+    Thursday: 'Sompeta',
+    Friday: 'Ichapuram',
+    Saturday: 'Palasa',
+    Sunday: 'Off',
+  },
+  2: {
+    // Dr. Tridib Gogoi
+    Monday: 'Sompeta',
+    Tuesday: 'Sompeta',
+    Wednesday: 'Palasa',
+    Thursday: 'Palasa',
+    Friday: 'Palasa',
+    Saturday: 'Ichapuram',
+    Sunday: 'Off',
+  },
+}
+
 /**
  * Converts any standard time string ("09:00 AM", "9:00 AM", "17:00", "5:00 PM") to 24-hour "HH:mm"
  * for use in standard HTML <input type="time">.
@@ -98,8 +139,48 @@ export const isValidTimeString = (timeStr: string | null | undefined): boolean =
 }
 
 /**
+ * Safely extracts the day of the week (Monday - Sunday) from a Date object or "YYYY-MM-DD" string.
+ */
+export const getDayOfWeek = (dateInput?: string | Date | null): DayOfWeek => {
+  const dayNames: DayOfWeek[] = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ]
+
+  if (!dateInput) {
+    const d = new Date()
+    return dayNames[d.getDay()]
+  }
+
+  if (typeof dateInput === 'string') {
+    const parts = dateInput.trim().split('-')
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10)
+      const month = parseInt(parts[1], 10) - 1
+      const day = parseInt(parts[2], 10)
+      const d = new Date(year, month, day)
+      if (!isNaN(d.getTime())) {
+        return dayNames[d.getDay()]
+      }
+    }
+  }
+
+  const d = new Date(dateInput)
+  if (!isNaN(d.getTime())) {
+    return dayNames[d.getDay()]
+  }
+
+  return dayNames[new Date().getDay()]
+}
+
+/**
  * Checks if a doctor is available overall.
- * Single canonical source of truth for overall doctor availability.
+ * Single canonical source of truth for overall doctor availability status.
  */
 export const isDoctorAvailable = (doc: Doctor | null | undefined): boolean => {
   if (!doc) return false
@@ -107,39 +188,105 @@ export const isDoctorAvailable = (doc: Doctor | null | undefined): boolean => {
 }
 
 /**
- * Gets the current/stationed branch of a doctor, normalized and trimmed.
- * Default fallback is 'Palasa' if none specified.
+ * Extracts a doctor's weekly branch schedule from doctor_schedule rows.
+ * Falls back to DEFAULT_WEEKLY_SCHEDULES if no custom weekly rows are present.
  */
-export const getDoctorCurrentBranch = (doc: Doctor | null | undefined): string => {
-  if (!doc || !doc.current_branch) return 'Palasa'
-  const trimmed = doc.current_branch.trim()
-  return trimmed || 'Palasa'
+export const getDoctorWeeklySchedule = (
+  doctorId: number,
+  schedules: DoctorSchedule[]
+): Record<DayOfWeek, string> => {
+  const fallback = DEFAULT_WEEKLY_SCHEDULES[doctorId] || {
+    Monday: 'Palasa',
+    Tuesday: 'Palasa',
+    Wednesday: 'Sompeta',
+    Thursday: 'Sompeta',
+    Friday: 'Ichapuram',
+    Saturday: 'Palasa',
+    Sunday: 'Off',
+  }
+
+  const result: Record<DayOfWeek, string> = { ...fallback }
+
+  for (const day of DAYS_OF_WEEK) {
+    const key = `weekly_${day}`.toLowerCase()
+    const found = schedules.find(
+      (s) => s.doctor_id === doctorId && s.branch_name.trim().toLowerCase() === key
+    )
+    if (found) {
+      if (!found.is_available || found.start_time?.trim().toLowerCase() === 'off') {
+        result[day] = 'Off'
+      } else if (found.start_time) {
+        result[day] = found.start_time.trim()
+      }
+    }
+  }
+
+  return result
 }
 
 /**
- * Checks if a doctor is available at a specific branch based on the strict hierarchy:
- * Doctor Overall Status -> Current/Selected Branch -> Optional Branch Open Status
+ * Gets the assigned branch of a doctor for a given date / day of the week.
+ */
+export const getDoctorBranchForDate = (
+  doc: Doctor | null | undefined,
+  date: string | Date | undefined,
+  schedules: DoctorSchedule[]
+): string => {
+  if (!doc) return 'Palasa'
+  const day = getDayOfWeek(date)
+  const weekly = getDoctorWeeklySchedule(doc.id, schedules)
+  return weekly[day] || doc.current_branch || 'Palasa'
+}
+
+/**
+ * Gets the current/today's branch of a doctor.
+ */
+export const getDoctorCurrentBranch = (
+  doc: Doctor | null | undefined,
+  schedules?: DoctorSchedule[],
+  date?: string | Date
+): string => {
+  if (!doc) return 'Palasa'
+  if (schedules && schedules.length > 0) {
+    const branchForDate = getDoctorBranchForDate(doc, date || new Date(), schedules)
+    if (branchForDate && branchForDate !== 'Off') {
+      return branchForDate
+    }
+  }
+  return doc.current_branch?.trim() || 'Palasa'
+}
+
+/**
+ * Checks if a doctor is available at a specific branch on a specific date.
  *
  * Rules:
  * 1. If Doctor Status = UNAVAILABLE / OFF-DUTY:
- *    ALL branches are immediately false (Unavailable).
+ *    Returns false for ALL branches on ALL dates.
  * 2. If Doctor Status = AVAILABLE:
- *    ONLY the current/selected branch is true (Available). All other branches are false.
- * 3. If branches list is provided and the target branch is closed (is_open === false):
- *    Branch is false (Unavailable).
+ *    Returns true ONLY IF the doctor's weekly branch assignment for that date matches branchName (and is not 'Off').
+ * 3. If branches list is provided and target branch is closed (is_open === false):
+ *    Returns false.
  */
-export const isDoctorBranchAvailable = (
+export const isDoctorAvailableOnDate = (
   doc: Doctor | null | undefined,
+  date: string | Date | undefined,
   branchName: string,
+  schedules: DoctorSchedule[],
   branches?: Branch[]
 ): boolean => {
   if (!isDoctorAvailable(doc)) {
     return false
   }
-  const currentBranch = getDoctorCurrentBranch(doc)
-  if (currentBranch.toLowerCase() !== branchName.trim().toLowerCase()) {
+
+  const assignedBranch = getDoctorBranchForDate(doc, date, schedules)
+  if (assignedBranch.toLowerCase() === 'off') {
     return false
   }
+
+  if (assignedBranch.trim().toLowerCase() !== branchName.trim().toLowerCase()) {
+    return false
+  }
+
   if (branches && branches.length > 0) {
     const branchObj = branches.find(
       (b) => b.name.trim().toLowerCase() === branchName.trim().toLowerCase()
@@ -148,7 +295,36 @@ export const isDoctorBranchAvailable = (
       return false
     }
   }
+
   return true
+}
+
+/**
+ * Checks if a doctor is available at a specific branch today (backward compatibility helper).
+ */
+export const isDoctorBranchAvailable = (
+  doc: Doctor | null | undefined,
+  branchName: string,
+  branches?: Branch[],
+  schedules?: DoctorSchedule[]
+): boolean => {
+  return isDoctorAvailableOnDate(doc, new Date(), branchName, schedules || [], branches)
+}
+
+/**
+ * Returns all senior doctors who are available at a specific branch on a specific date.
+ */
+export const getAvailableDoctorsForBranchAndDate = (
+  branchName: string,
+  date: string | Date | undefined,
+  doctors: Doctor[],
+  schedules: DoctorSchedule[],
+  branches?: Branch[]
+): Doctor[] => {
+  if (!branchName) return []
+  return doctors.filter((doc) =>
+    isDoctorAvailableOnDate(doc, date, branchName, schedules, branches)
+  )
 }
 
 export interface DoctorBranchScheduleInfo {
@@ -160,15 +336,14 @@ export interface DoctorBranchScheduleInfo {
 
 /**
  * Gets effective schedule details for a doctor at a given branch.
- * Timings come from doctor_schedule (or standard fallback '09:00 AM' - '05:00 PM').
- * Availability strictly obeys doctor's overall status, current branch hierarchy, and branch status.
  */
 export const getDoctorBranchSchedule = (
   doctorId: number,
   branchName: string,
   doc: Doctor | null | undefined,
   schedules: DoctorSchedule[],
-  branches?: Branch[]
+  branches?: Branch[],
+  date?: string | Date
 ): DoctorBranchScheduleInfo => {
   const scheduleRow =
     schedules.find(
@@ -177,7 +352,13 @@ export const getDoctorBranchSchedule = (
         s.branch_name.trim().toLowerCase() === branchName.trim().toLowerCase()
     ) || null
 
-  const is_available = isDoctorBranchAvailable(doc, branchName, branches)
+  const is_available = isDoctorAvailableOnDate(
+    doc,
+    date || new Date(),
+    branchName,
+    schedules,
+    branches
+  )
   const rawStart = scheduleRow?.start_time?.trim() || '09:00 AM'
   const rawEnd = scheduleRow?.end_time?.trim() || '05:00 PM'
 
@@ -199,33 +380,43 @@ export interface AvailableDoctorBranchOption {
 }
 
 /**
- * Gets the list of branches where the doctor is currently available for booking/consultation.
- * If Doctor is Unavailable -> returns [] (0 available branches).
- * If Doctor is Available -> returns ONLY the current branch option with its schedule (if branch is open).
+ * Gets the list of branches where the doctor is available for a given date.
  */
 export const getDoctorAvailableBranches = (
   doc: Doctor | null | undefined,
   branches: Branch[],
-  schedules: DoctorSchedule[]
+  schedules: DoctorSchedule[],
+  date?: string | Date
 ): AvailableDoctorBranchOption[] => {
   if (!isDoctorAvailable(doc)) {
     return []
   }
 
-  const currentBranch = getDoctorCurrentBranch(doc)
+  const assignedBranch = getDoctorBranchForDate(doc, date || new Date(), schedules)
+  if (assignedBranch.toLowerCase() === 'off') {
+    return []
+  }
+
   const branchInfo =
-    branches.find((b) => b.name.trim().toLowerCase() === currentBranch.toLowerCase()) || null
+    branches.find((b) => b.name.trim().toLowerCase() === assignedBranch.toLowerCase()) || null
 
   // If branch is closed, doctor cannot be booked at that branch
   if (branchInfo && !branchInfo.is_open) {
     return []
   }
 
-  const schedInfo = getDoctorBranchSchedule(doc!.id, currentBranch, doc, schedules, branches)
+  const schedInfo = getDoctorBranchSchedule(
+    doc!.id,
+    assignedBranch,
+    doc,
+    schedules,
+    branches,
+    date
+  )
 
   return [
     {
-      name: currentBranch,
+      name: assignedBranch,
       isAvailable: schedInfo.is_available,
       startTime: schedInfo.start_time,
       endTime: schedInfo.end_time,
@@ -234,3 +425,4 @@ export const getDoctorAvailableBranches = (
     },
   ]
 }
+

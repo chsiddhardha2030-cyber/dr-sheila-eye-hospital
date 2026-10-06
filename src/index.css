@@ -95,3 +95,20 @@ select option:disabled {
   color: #8A96A6;
   background-color: #FAF8F5;
 }
+
+/* Continuous Branch Status Ticker Marquee */
+@keyframes branchTicker {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-branch-ticker {
+  display: flex;
+  width: max-content;
+  animation: branchTicker 32s linear infinite;
+  will-change: transform;
+}

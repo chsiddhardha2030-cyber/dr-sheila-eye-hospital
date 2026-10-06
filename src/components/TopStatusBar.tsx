@@ -1,19 +1,21 @@
 import React from 'react'
 import { MapPin, Stethoscope, Lock } from 'lucide-react'
 import { useHospitalData } from '../context/HospitalDataContext'
-import { isDoctorAvailable, getDoctorCurrentBranch } from '../lib/doctorAvailability'
+import { isDoctorAvailable, getDoctorBranchForDate } from '../lib/doctorAvailability'
 
 interface TopStatusBarProps {
   onNavigateToAdmin?: () => void
 }
 
 export const TopStatusBar: React.FC<TopStatusBarProps> = ({ onNavigateToAdmin }) => {
-  const { branches, doctors } = useHospitalData()
+  const { branches, doctors, schedules } = useHospitalData()
 
   return (
-    <aside aria-label="Hospital Branch & Doctor Availability" className="w-full bg-[#1C242E] text-white/90 text-[11px] sm:text-xs py-2 px-4 sm:px-8 border-b border-stone-800 relative z-50">
+    <aside
+      aria-label="Hospital Branch & Doctor Availability"
+      className="w-full bg-[#1C242E] text-white/90 text-[11px] sm:text-xs py-2 px-4 sm:px-8 border-b border-stone-800 relative z-50"
+    >
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-y-1.5 gap-x-4">
-        
         {/* Left: Branch Open/Closed Statuses */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <span className="font-heading font-bold uppercase tracking-wider text-rose-300 text-[10px] sm:text-[11px] flex items-center gap-1">
@@ -31,9 +33,13 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({ onNavigateToAdmin })
                     }`}
                   />
                   <span className="text-white font-semibold">{branch.name}:</span>
-                  <span className={branch.is_open ? 'text-emerald-300 font-medium' : 'text-stone-400'}>
+                  <span
+                    className={branch.is_open ? 'text-emerald-300 font-medium' : 'text-stone-400'}
+                  >
                     {branch.is_open
-                      ? `${branch.opening_time || '09:00 AM'} – ${branch.closing_time || '08:00 PM'}`
+                      ? `${branch.opening_time || '09:00 AM'} – ${
+                          branch.closing_time || '08:00 PM'
+                        }`
                       : 'Closed'}
                   </span>
                 </div>
@@ -52,7 +58,8 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({ onNavigateToAdmin })
             <div className="flex items-center gap-3">
               {doctors.map((doc) => {
                 const isAvail = isDoctorAvailable(doc)
-                const currentBranch = getDoctorCurrentBranch(doc)
+                const currentBranch = getDoctorBranchForDate(doc, new Date(), schedules)
+                const isOffToday = currentBranch.toLowerCase() === 'off'
                 const branchObj = branches.find(
                   (b) => b.name.toLowerCase() === currentBranch.toLowerCase()
                 )
@@ -61,14 +68,12 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({ onNavigateToAdmin })
                 return (
                   <span key={doc.id} className="inline-flex items-center gap-1">
                     <strong className="text-white">{doc.name}:</strong>
-                    {isAvail && isBranchOpen ? (
-                      <span className="text-emerald-300">
-                        Available ({currentBranch})
-                      </span>
+                    {isAvail && !isOffToday && isBranchOpen ? (
+                      <span className="text-emerald-300">Available ({currentBranch})</span>
+                    ) : isAvail && isOffToday ? (
+                      <span className="text-stone-400">Off today</span>
                     ) : isAvail && !isBranchOpen ? (
-                      <span className="text-amber-300">
-                        {currentBranch} (Closed)
-                      </span>
+                      <span className="text-amber-300">{currentBranch} (Closed)</span>
                     ) : (
                       <span className="text-stone-400">Off-duty</span>
                     )}
@@ -89,10 +94,9 @@ export const TopStatusBar: React.FC<TopStatusBarProps> = ({ onNavigateToAdmin })
               <span>Admin</span>
             </button>
           )}
-
         </div>
-
       </div>
     </aside>
   )
 }
+

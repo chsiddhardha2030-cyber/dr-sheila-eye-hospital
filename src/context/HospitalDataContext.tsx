@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import { time24ToString } from '../lib/doctorAvailability'
+import {
+  time24ToString,
+  getDayOfWeek,
+  DAYS_OF_WEEK,
+} from '../lib/doctorAvailability'
 import type {
+
   Doctor,
   Branch,
   DoctorSchedule,
@@ -31,6 +36,10 @@ interface HospitalDataContextType {
     doctorUpdates: { available: boolean; current_branch: string },
     scheduleUpdates: { start_time: string; end_time: string }
   ) => Promise<{ success: boolean; error?: string }>
+  saveWeeklySchedule: (
+    doctorId: number,
+    weeklyAssignments: Record<string, string>
+  ) => Promise<{ success: boolean; error?: string }>
 }
 
 const HospitalDataContext = createContext<HospitalDataContextType | undefined>(undefined)
@@ -57,9 +66,13 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (branchRes.error) throw branchRes.error
       if (schedRes.error) throw schedRes.error
 
-      setDoctors((docsRes.data as Doctor[]) || [])
-      setBranches((branchRes.data as Branch[]) || [])
-      setSchedules((schedRes.data as DoctorSchedule[]) || [])
+      const fetchedDocs = (docsRes.data as Doctor[]) || []
+      const fetchedBranches = (branchRes.data as Branch[]) || []
+      const fetchedSchedules = (schedRes.data as DoctorSchedule[]) || []
+
+      setDoctors(fetchedDocs)
+      setBranches(fetchedBranches)
+      setSchedules(fetchedSchedules)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to fetch hospital data'
       console.error('Error fetching Supabase data:', msg)
@@ -87,44 +100,43 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
         data && data.length > 0
           ? (data[0] as Doctor)
           : ({
-              ...(doctors.find((d) => d.id === id) || { id, name: '', available: false, current_branch: 'Palasa' }),
+              ...(doctors.find((d) => d.id === id) || {
+                id,
+                name: '',
+                available: false,
+                current_branch: 'Palasa',
+              }),
               ...updates,
             } as Doctor)
 
-      setDoctors((prev) =>
-        prev.map((doc) => (doc.id === id ? updatedDoctor : doc))
-      )
+      setDoctors((prev) => prev.map((doc) => (doc.id === id ? updatedDoctor : doc)))
 
-      // Synchronize doctor_schedule records in Supabase and local state
-      const isDocAvail = Boolean(updatedDoctor.available)
-      const docBranch = (updatedDoctor.current_branch || 'Palasa').trim().toLowerCase()
+      // If current_branch was updated directly, sync today's weekly schedule row
+      if (updates.current_branch) {
+        const todayDay = getDayOfWeek()
+        const weeklyKey = `weekly_${todayDay}`.toLowerCase()
+        const existingWeekly = schedules.find(
+          (s) => s.doctor_id === id && s.branch_name.trim().toLowerCase() === weeklyKey
+        )
 
-      // Update in Supabase for all schedules of this doctor
-      const targetSchedules = schedules.filter((s) => s.doctor_id === id)
-      for (const sched of targetSchedules) {
-        const branchMatches = sched.branch_name.trim().toLowerCase() === docBranch
-        const newSchedAvail = isDocAvail && branchMatches
-        if (sched.is_available !== newSchedAvail) {
+        if (existingWeekly) {
           await supabase
             .from('doctor_schedule')
-            .update({ is_available: newSchedAvail })
-            .eq('id', sched.id)
+            .update({
+              start_time: updates.current_branch,
+              is_available: true,
+            })
+            .eq('id', existingWeekly.id)
+
+          setSchedules((prev) =>
+            prev.map((s) =>
+              s.id === existingWeekly.id
+                ? { ...s, start_time: updates.current_branch!, is_available: true }
+                : s
+            )
+          )
         }
       }
-
-      // Update local schedules state
-      setSchedules((prev) =>
-        prev.map((s) => {
-          if (s.doctor_id === id) {
-            const branchMatches = s.branch_name.trim().toLowerCase() === docBranch
-            return {
-              ...s,
-              is_available: isDocAvail && branchMatches,
-            }
-          }
-          return s
-        })
-      )
 
       return { success: true }
     } catch (err: unknown) {
@@ -180,7 +192,9 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const effectiveAvailable = isDocAvail && branchMatches
 
       const existing = schedules.find(
-        (s) => s.doctor_id === doctorId && s.branch_name.trim().toLowerCase() === branchName.trim().toLowerCase()
+        (s) =>
+          s.doctor_id === doctorId &&
+          s.branch_name.trim().toLowerCase() === branchName.trim().toLowerCase()
       )
 
       const payload: DoctorScheduleUpdate = {
@@ -267,14 +281,17 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
         docData && docData.length > 0
           ? (docData[0] as Doctor)
           : ({
-              ...(doctors.find((d) => d.id === doctorId) || { id: doctorId, name: '', available: doctorUpdates.available, current_branch: doctorUpdates.current_branch }),
+              ...(doctors.find((d) => d.id === doctorId) || {
+                id: doctorId,
+                name: '',
+                available: doctorUpdates.available,
+                current_branch: doctorUpdates.current_branch,
+              }),
               available: doctorUpdates.available,
               current_branch: doctorUpdates.current_branch,
             } as Doctor)
 
-      setDoctors((prev) =>
-        prev.map((d) => (d.id === doctorId ? updatedDoc : d))
-      )
+      setDoctors((prev) => prev.map((d) => (d.id === doctorId ? updatedDoc : d)))
 
       // 2. Normalize timings
       const normalizedStart = time24ToString(scheduleUpdates.start_time, '09:00 AM')
@@ -284,7 +301,9 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       // 3. Update or Insert doctor_schedule for the targeted branch
       const existing = schedules.find(
-        (s) => s.doctor_id === doctorId && s.branch_name.trim().toLowerCase() === branchName.trim().toLowerCase()
+        (s) =>
+          s.doctor_id === doctorId &&
+          s.branch_name.trim().toLowerCase() === branchName.trim().toLowerCase()
       )
 
       const targetMatchesSelected = branchName.trim().toLowerCase() === selectedBranch
@@ -346,41 +365,142 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
       }
 
-      // 4. Update all other branches for this doctor to is_available: false
-      const otherSchedules = schedules.filter(
-        (s) => s.doctor_id === doctorId && s.branch_name.trim().toLowerCase() !== branchName.trim().toLowerCase()
+      // 4. Also keep today's weekly schedule row synchronized
+      const todayDay = getDayOfWeek()
+      const weeklyKey = `weekly_${todayDay}`.toLowerCase()
+      const existingWeekly = schedules.find(
+        (s) => s.doctor_id === doctorId && s.branch_name.trim().toLowerCase() === weeklyKey
       )
 
-      for (const other of otherSchedules) {
-        const isOtherAvailable = isDocAvail && other.branch_name.trim().toLowerCase() === selectedBranch
-        if (other.is_available !== isOtherAvailable) {
-          await supabase
-            .from('doctor_schedule')
-            .update({ is_available: isOtherAvailable })
-            .eq('id', other.id)
-        }
+      if (existingWeekly) {
+        await supabase
+          .from('doctor_schedule')
+          .update({
+            start_time: doctorUpdates.current_branch,
+            is_available: isDocAvail,
+          })
+          .eq('id', existingWeekly.id)
+
+        setSchedules((prev) =>
+          prev.map((s) =>
+            s.id === existingWeekly.id
+              ? { ...s, start_time: doctorUpdates.current_branch, is_available: isDocAvail }
+              : s
+          )
+        )
       }
-
-      // Update local state for all schedules of this doctor
-      setSchedules((prev) =>
-        prev.map((s) => {
-          if (s.doctor_id === doctorId) {
-            const isStation = s.branch_name.trim().toLowerCase() === selectedBranch
-            return {
-              ...s,
-              is_available: isDocAvail && isStation,
-              ...(s.branch_name.trim().toLowerCase() === branchName.trim().toLowerCase()
-                ? { start_time: normalizedStart, end_time: normalizedEnd }
-                : {}),
-            }
-          }
-          return s
-        })
-      )
 
       return { success: true }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save doctor and schedule'
+      return { success: false, error: msg }
+    }
+  }
+
+  /**
+   * Saves weekly branch assignments for a doctor (Monday - Sunday) to doctor_schedule in Supabase,
+   * and automatically synchronizes today's current_branch on the doctors table.
+   */
+  const saveWeeklySchedule = async (
+    doctorId: number,
+    weeklyAssignments: Record<string, string>
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const todayDay = getDayOfWeek()
+      const updatedScheduleRows: DoctorSchedule[] = []
+
+      for (const day of DAYS_OF_WEEK) {
+        const branchKey = `weekly_${day}`
+        const assignedBranch = weeklyAssignments[day] || 'Off'
+        const isAvail = assignedBranch.toLowerCase() !== 'off'
+
+        const existing = schedules.find(
+          (s) =>
+            s.doctor_id === doctorId &&
+            s.branch_name.trim().toLowerCase() === branchKey.toLowerCase()
+        )
+
+        if (existing) {
+          const { data: updatedData, error: updateErr } = await supabase
+            .from('doctor_schedule')
+            .update({
+              start_time: assignedBranch,
+              end_time: '09:00 AM - 05:00 PM',
+              is_available: isAvail,
+            })
+            .eq('id', existing.id)
+            .select()
+
+          if (updateErr) throw updateErr
+          if (updatedData && updatedData.length > 0) {
+            updatedScheduleRows.push(updatedData[0] as DoctorSchedule)
+          } else {
+            updatedScheduleRows.push({
+              ...existing,
+              start_time: assignedBranch,
+              is_available: isAvail,
+            })
+          }
+        } else {
+          const newRow: DoctorScheduleInsert = {
+            doctor_id: doctorId,
+            branch_name: branchKey,
+            start_time: assignedBranch,
+            end_time: '09:00 AM - 05:00 PM',
+            is_available: isAvail,
+          }
+
+          const { data: insertedData, error: insertErr } = await supabase
+            .from('doctor_schedule')
+            .insert(newRow)
+            .select()
+
+          if (insertErr) throw insertErr
+          if (insertedData && insertedData.length > 0) {
+            updatedScheduleRows.push(insertedData[0] as DoctorSchedule)
+          }
+        }
+      }
+
+      // Update local schedules state
+      setSchedules((prev) => {
+        const remaining = prev.filter(
+          (s) =>
+            !(
+              s.doctor_id === doctorId &&
+              s.branch_name.toLowerCase().startsWith('weekly_')
+            )
+        )
+        return [...remaining, ...updatedScheduleRows]
+      })
+
+      // Automatically sync today's current_branch for this doctor
+      const todayAssigned = weeklyAssignments[todayDay] || 'Palasa'
+      const targetTodayBranch = todayAssigned.toLowerCase() !== 'off' ? todayAssigned : 'Palasa'
+
+      const { data: docData, error: docErr } = await supabase
+        .from('doctors')
+        .update({
+          current_branch: targetTodayBranch,
+        })
+        .eq('id', doctorId)
+        .select()
+
+      if (!docErr && docData && docData.length > 0) {
+        setDoctors((prev) =>
+          prev.map((d) => (d.id === doctorId ? (docData[0] as Doctor) : d))
+        )
+      } else {
+        setDoctors((prev) =>
+          prev.map((d) =>
+            d.id === doctorId ? { ...d, current_branch: targetTodayBranch } : d
+          )
+        )
+      }
+
+      return { success: true }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save weekly schedule'
       return { success: false, error: msg }
     }
   }
@@ -398,6 +518,7 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
         updateBranch,
         saveDoctorSchedule,
         saveDoctorAndSchedule,
+        saveWeeklySchedule,
       }}
     >
       {children}
@@ -412,3 +533,4 @@ export const useHospitalData = () => {
   }
   return context
 }
+

@@ -391,13 +391,8 @@ export const TestsAndSurgery: React.FC = () => {
                       <div>
                         {/* Top Meta Bar */}
                         <div className="flex items-center justify-between gap-4 mb-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D] group-hover:bg-[#BE185D] group-hover:text-white transition-all duration-400 shadow-sm">
-                              <Icon size={22} />
-                            </div>
-                            <span className="font-heading font-extrabold text-2xl text-stone-300 group-hover:text-[#BE185D]/40 transition-colors duration-300">
-                              {cat.number}
-                            </span>
+                          <div className="w-12 h-12 rounded-2xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D] group-hover:bg-[#BE185D] group-hover:text-white transition-all duration-400 shadow-sm">
+                            <Icon size={22} />
                           </div>
 
                           {cat.palasaOnly ? (
@@ -497,13 +492,8 @@ export const TestsAndSurgery: React.FC = () => {
 
                           {/* Meta Bar */}
                           <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-10 h-10 rounded-xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D]">
-                                <Icon size={18} />
-                              </div>
-                              <span className="font-heading font-extrabold text-xl text-stone-300">
-                                {cat.number}
-                              </span>
+                            <div className="w-10 h-10 rounded-xl bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D]">
+                              <Icon size={18} />
                             </div>
                             <span className="text-[11px] font-heading font-semibold uppercase tracking-wider text-[#BE185D] bg-[#FDF2F4] px-2.5 py-1 rounded-full border border-[#FCE7F3]">
                               {cat.shortTag}
@@ -664,7 +654,7 @@ export const TestsAndSurgery: React.FC = () => {
                             <Icon size={18} />
                           </div>
                           <span className="text-xs font-heading font-semibold uppercase tracking-widest text-[#BE185D]">
-                            Category {current.number} &bull; {current.shortTag}
+                            {current.shortTag}
                           </span>
                         </div>
 

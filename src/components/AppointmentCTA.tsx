@@ -9,24 +9,24 @@ import {
   PhoneCall,
   AlertCircle,
   CheckCircle2,
+  Info,
 } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa6'
 import { useHospitalData } from '../context/HospitalDataContext'
 import type { Branch } from '../lib/database.types'
 import {
-  isDoctorAvailable,
-  getDoctorCurrentBranch,
-  getDoctorAvailableBranches,
+  HOSPITAL_BRANCHES,
+  getDayOfWeek,
+  getAvailableDoctorsForBranchAndDate,
   getDoctorBranchSchedule,
 } from '../lib/doctorAvailability'
 
-// Helper to parse time strings like "10:00 AM", "10:00 PM", "10:00", "22:00", "09:30", "10:00:00", "22:00:00+05:30" to minutes from midnight
+// Helper to parse time strings to minutes from midnight
 const parseTimeToMinutes = (timeStr: string | null | undefined): number | null => {
   if (!timeStr) return null
   const trimmed = timeStr.trim()
   if (!trimmed) return null
 
-  // Match 12-hour format e.g. "10:00 AM", "09:30 PM", "9:00am", "10:15 pm", "10:00:00 AM"
   const match12 = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i)
   if (match12) {
     let hours = parseInt(match12[1], 10)
@@ -37,7 +37,6 @@ const parseTimeToMinutes = (timeStr: string | null | undefined): number | null =
     return hours * 60 + minutes
   }
 
-  // Match 24-hour format e.g. "10:00", "22:00", "09:30", "14:15:00", "10:00:00+00", "22:00:00Z"
   const match24 = trimmed.match(/^(\d{1,2}):(\d{2})/)
   if (match24) {
     const hours = parseInt(match24[1], 10)
@@ -50,14 +49,12 @@ const parseTimeToMinutes = (timeStr: string | null | undefined): number | null =
   return null
 }
 
-// Convert minutes from midnight to "HH:mm" 24-hour string
 const minutesToTime24 = (mins: number): string => {
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
 }
 
-// Format 24-hour time "HH:mm" to "hh:mm AM/PM"
 const formatTimeTo12Hour = (time24: string): string => {
   if (!time24) return ''
   if (/AM|PM/i.test(time24)) return time24
@@ -71,7 +68,6 @@ const formatTimeTo12Hour = (time24: string): string => {
   return `${hour12.toString().padStart(2, '0')}:${minute} ${period}`
 }
 
-// Format YYYY-MM-DD to "DD MMMM YYYY" (e.g. 28 August 2026)
 const formatDateClean = (dateStr: string): string => {
   if (!dateStr) return ''
   try {
@@ -83,6 +79,7 @@ const formatDateClean = (dateStr: string): string => {
     const d = new Date(year, month, day)
     if (isNaN(d.getTime())) return dateStr
     return d.toLocaleDateString('en-GB', {
+      weekday: 'short',
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -92,7 +89,6 @@ const formatDateClean = (dateStr: string): string => {
   }
 }
 
-// Clean WhatsApp number to digits with country code
 const getCleanWhatsAppNumber = (raw: string | null | undefined): string => {
   if (!raw) return ''
   const digits = raw.replace(/\D/g, '')
@@ -108,79 +104,10 @@ const getCleanWhatsAppNumber = (raw: string | null | undefined): string => {
   return digits
 }
 
+const BRANCH_CONSULTATION_VALUE = 'branch_duty_doctor'
+
 export const AppointmentCTA: React.FC = () => {
-  const { doctors, branches, schedules, loading } = useHospitalData()
-
-  const [formData, setFormData] = useState({
-    doctorId: '',
-    branch: '',
-    name: '',
-    phone: '',
-    age: '',
-    gender: '',
-    date: '',
-    time: '',
-    message: '',
-  })
-
-  const [phoneError, setPhoneError] = useState<string>('')
-  const [ageError, setAgeError] = useState<string>('')
-  const [timeError, setTimeError] = useState<string>('')
-  const [generalError, setGeneralError] = useState<string>('')
-
-  // Find currently selected doctor object
-  const selectedDoctor = useMemo(() => {
-    if (!formData.doctorId) return null
-    return doctors.find((d) => String(d.id) === String(formData.doctorId)) || null
-  }, [doctors, formData.doctorId])
-
-  const isDocAvail = useMemo(() => isDoctorAvailable(selectedDoctor), [selectedDoctor])
-
-  // Determine available branches based on canonical availability hierarchy
-  const availableBranches = useMemo(() => {
-    if (!selectedDoctor || !isDocAvail) return []
-    return getDoctorAvailableBranches(selectedDoctor, branches, schedules)
-  }, [selectedDoctor, isDocAvail, branches, schedules])
-
-  // Selected branch object from Supabase branches table
-  const selectedBranchObj = useMemo(() => {
-    if (!formData.branch) return null
-    return branches.find(
-      (b) => b.name.trim().toLowerCase() === formData.branch.trim().toLowerCase()
-    ) || null
-  }, [branches, formData.branch])
-
-  // Automatically update branch when doctor selection changes
-  useEffect(() => {
-    if (!formData.doctorId || !isDocAvail || availableBranches.length === 0) {
-      setFormData((prev) => (prev.branch ? { ...prev, branch: '' } : prev))
-      return
-    }
-
-    if (availableBranches.length === 1) {
-      // Automatically select the single active available branch
-      setFormData((prev) => ({
-        ...prev,
-        branch: availableBranches[0].name,
-      }))
-    } else {
-      const isValid = availableBranches.some(
-        (b) => b.name.toLowerCase() === formData.branch.toLowerCase()
-      )
-      if (!isValid) {
-        setFormData((prev) => ({
-          ...prev,
-          branch: availableBranches[0]?.name || '',
-        }))
-      }
-    }
-  }, [formData.doctorId, isDocAvail, availableBranches])
-
-  // Active schedule for selected doctor and selected branch
-  const activeSchedule = useMemo(() => {
-    if (!selectedDoctor || !formData.branch || !isDocAvail) return null
-    return getDoctorBranchSchedule(selectedDoctor.id, formData.branch, selectedDoctor, schedules)
-  }, [selectedDoctor, formData.branch, isDocAvail, schedules])
+  const { doctors, branches, schedules } = useHospitalData()
 
   // Compute today's date string YYYY-MM-DD
   const todayString = useMemo(() => {
@@ -189,15 +116,101 @@ export const AppointmentCTA: React.FC = () => {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
   }, [])
 
-  // Branch opening and closing time in minutes (0-1439) from Supabase branches table
+  const [formData, setFormData] = useState({
+    branch: '', // Select Branch * (No default selection)
+    doctorId: '', // Select Doctor * (No default selection)
+    name: '', // Patient Name *
+    phone: '', // Phone Number *
+    age: '', // Age
+    gender: '', // Gender
+    date: todayString, // Preferred Date * (Always today's date)
+    time: '', // Preferred Time * (No default time)
+    message: '', // Reason for Visit / Message (Optional)
+  })
+
+  const [phoneError, setPhoneError] = useState<string>('')
+  const [ageError, setAgeError] = useState<string>('')
+  const [timeError, setTimeError] = useState<string>('')
+  const [generalError, setGeneralError] = useState<string>('')
+
+  // Day of week of the selected date
+  const selectedDayOfWeek = useMemo(() => {
+    return getDayOfWeek(formData.date)
+  }, [formData.date])
+
+  // Selected branch object from Supabase branches table
+  const selectedBranchObj = useMemo(() => {
+    if (!formData.branch) return null
+    return (
+      branches.find(
+        (b) => b.name.trim().toLowerCase() === formData.branch.trim().toLowerCase()
+      ) || null
+    )
+  }, [branches, formData.branch])
+
+  // Doctors available at the selected branch on the selected date
+  const availableSeniorDoctors = useMemo(() => {
+    if (!formData.branch) return []
+    return getAvailableDoctorsForBranchAndDate(
+      formData.branch,
+      formData.date,
+      doctors,
+      schedules,
+      branches
+    )
+  }, [formData.branch, formData.date, doctors, schedules, branches])
+
+  // Validate and maintain selected doctor when branch/date changes (without forcing default selection)
+  useEffect(() => {
+    if (!formData.branch) {
+      if (formData.doctorId) {
+        setFormData((prev) => ({ ...prev, doctorId: '' }))
+      }
+      return
+    }
+
+    if (formData.doctorId) {
+      if (formData.doctorId === BRANCH_CONSULTATION_VALUE) {
+        return
+      }
+      const isStillAvailable = availableSeniorDoctors.some(
+        (d) => String(d.id) === String(formData.doctorId)
+      )
+      if (!isStillAvailable) {
+        // Reset doctor selection if currently selected doctor is not available at this branch/date
+        setFormData((prev) => ({ ...prev, doctorId: '' }))
+      }
+    }
+  }, [formData.branch, formData.date, availableSeniorDoctors, formData.doctorId])
+
+  // Find currently selected senior doctor object (if a specific doctor is selected)
+  const selectedDoctorObj = useMemo(() => {
+    if (!formData.doctorId || formData.doctorId === BRANCH_CONSULTATION_VALUE) return null
+    return doctors.find((d) => String(d.id) === String(formData.doctorId)) || null
+  }, [doctors, formData.doctorId])
+
+  // Active doctor schedule info
+  const activeDoctorSchedule = useMemo(() => {
+    if (!selectedDoctorObj || !formData.branch) return null
+    return getDoctorBranchSchedule(
+      selectedDoctorObj.id,
+      formData.branch,
+      selectedDoctorObj,
+      schedules,
+      branches,
+      formData.date
+    )
+  }, [selectedDoctorObj, formData.branch, schedules, branches, formData.date])
+
+  // Branch opening and closing time in minutes (0-1439)
   const branchOpeningMins = useMemo(() => {
-    if (!selectedBranchObj?.opening_time) return 540 // Default 09:00 AM if unspecified
+    if (!selectedBranchObj?.opening_time) return 540 // Default 09:00 AM
     return parseTimeToMinutes(selectedBranchObj.opening_time) ?? 540
   }, [selectedBranchObj])
 
   const branchClosingMins = useMemo(() => {
-    if (!selectedBranchObj?.closing_time) return 1200 // Default 08:00 PM if unspecified
-    return parseTimeToMinutes(selectedBranchObj.closing_time) ?? 1200
+    if (!selectedBranchObj?.closing_time) return 1020 // Default 05:00 PM
+    return parseTimeToMinutes(selectedBranchObj.closing_time) ?? 1020
   }, [selectedBranchObj])
 
   const formattedBranchOpen = useMemo(() => {
@@ -208,49 +221,52 @@ export const AppointmentCTA: React.FC = () => {
     return formatTimeTo12Hour(minutesToTime24(branchClosingMins))
   }, [branchClosingMins])
 
-  // Compute HTML <input type="time"> min and max bounds
-  const timeBounds = useMemo(() => {
-    if (!selectedBranchObj) {
-      return { min: '', max: '' }
-    }
+  // Generate clean 30-minute time slots in 12-hour AM/PM format
+  const availableTimeSlots = useMemo(() => {
+    const slots: { value: string; label: string; isPast: boolean }[] = []
+    const startMins = selectedBranchObj ? branchOpeningMins : 540 // 09:00 AM default
+    const endMins = selectedBranchObj ? branchClosingMins : 1200 // 08:00 PM default if no branch selected
+
     const now = new Date()
+    const isToday = formData.date === todayString
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
-    const isSelectedToday = formData.date === todayString
 
-    let effectiveMinMins = branchOpeningMins
-    if (isSelectedToday) {
-      effectiveMinMins = Math.max(branchOpeningMins, nowMinutes)
+    for (let m = startMins; m <= endMins; m += 30) {
+      const time12 = formatTimeTo12Hour(minutesToTime24(m))
+      const isPast = isToday && m < nowMinutes
+      slots.push({
+        value: time12,
+        label: isPast ? `${time12} (Passed)` : time12,
+        isPast,
+      })
     }
-
-    return {
-      min: minutesToTime24(effectiveMinMins),
-      max: minutesToTime24(branchClosingMins),
-    }
-  }, [selectedBranchObj, formData.date, todayString, branchOpeningMins, branchClosingMins])
+    return slots
+  }, [selectedBranchObj, branchOpeningMins, branchClosingMins, formData.date, todayString])
 
   // Time validation function
   const validateTimeSelection = useCallback(
     (timeVal: string, dateVal: string, branchObj: Branch | null): string => {
       if (!branchObj) return ''
-      if (!branchObj.is_open) {
-        return `${branchObj.name} Center is currently marked as closed. Please select an open branch location.`
-      }
       if (!timeVal) return ''
 
       const userMins = parseTimeToMinutes(timeVal)
       if (userMins === null) return 'Please enter a valid appointment time.'
 
       const openMins = parseTimeToMinutes(branchObj.opening_time) ?? 540
-      const closeMins = parseTimeToMinutes(branchObj.closing_time) ?? 1200
+      const closeMins = parseTimeToMinutes(branchObj.closing_time) ?? 1020
       const openStr = formatTimeTo12Hour(minutesToTime24(openMins))
       const closeStr = formatTimeTo12Hour(minutesToTime24(closeMins))
 
       if (userMins < openMins) {
-        return `Selected time (${formatTimeTo12Hour(timeVal)}) is before opening time (${openStr}). Operating hours are ${openStr} – ${closeStr}.`
+        return `Selected time (${formatTimeTo12Hour(
+          timeVal
+        )}) is before opening time (${openStr}). Operating hours are ${openStr} – ${closeStr}.`
       }
 
       if (userMins > closeMins) {
-        return `Selected time (${formatTimeTo12Hour(timeVal)}) is after closing time (${closeStr}). Operating hours are ${openStr} – ${closeStr}.`
+        return `Selected time (${formatTimeTo12Hour(
+          timeVal
+        )}) is after closing time (${closeStr}). Operating hours are ${openStr} – ${closeStr}.`
       }
 
       if (dateVal === todayString) {
@@ -260,7 +276,9 @@ export const AppointmentCTA: React.FC = () => {
           return `Operating hours for today at ${branchObj.name} Center have ended (${openStr} – ${closeStr}). Please choose a future date.`
         }
         if (userMins < nowMins) {
-          return `Selected time (${formatTimeTo12Hour(timeVal)}) has already passed for today. Please select an upcoming time.`
+          return `Selected time (${formatTimeTo12Hour(
+            timeVal
+          )}) has already passed for today. Please select an upcoming time.`
         }
       }
 
@@ -279,12 +297,31 @@ export const AppointmentCTA: React.FC = () => {
     }
   }, [formData.time, formData.date, selectedBranchObj, validateTimeSelection])
 
+  const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextBranch = e.target.value
+    setGeneralError('')
+    setFormData((prev) => ({
+      ...prev,
+      branch: nextBranch,
+      // Do not automatically select doctor when branch changes
+    }))
+  }
+
   const handleDoctorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const docId = e.target.value
     setGeneralError('')
     setFormData((prev) => ({
       ...prev,
       doctorId: docId,
+    }))
+  }
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nextDate = e.target.value
+    setGeneralError('')
+    setFormData((prev) => ({
+      ...prev,
+      date: nextDate,
     }))
   }
 
@@ -338,23 +375,9 @@ export const AppointmentCTA: React.FC = () => {
     e.preventDefault()
     setGeneralError('')
 
-    // 1. Validate Doctor
-    if (!formData.doctorId || !selectedDoctor) {
-      setGeneralError('Please select a doctor.')
-      return
-    }
-
-    // 2. Validate Doctor Availability
-    if (!isDocAvail || availableBranches.length === 0) {
-      setGeneralError(
-        `Dr. ${selectedDoctor.name} is currently off-duty and unavailable for appointments at any hospital branch. Please select another doctor or contact reception.`
-      )
-      return
-    }
-
-    // 3. Validate Branch
+    // 1. Validate Branch (Required)
     if (!formData.branch) {
-      setGeneralError('Please select a branch location.')
+      setGeneralError('Please select a hospital branch.')
       return
     }
 
@@ -367,26 +390,25 @@ export const AppointmentCTA: React.FC = () => {
       return
     }
 
-    if (!targetBranch.is_open) {
-      setGeneralError(
-        `${targetBranch.name} Center is currently closed according to hospital records. Please select another branch or contact reception.`
-      )
+    // 2. Validate Doctor / Consultation Type
+    if (!formData.doctorId) {
+      setGeneralError('Please select a doctor or consultation type.')
       return
     }
 
-    // 4. Validate Patient Name
+    // 3. Validate Patient Name
     if (!formData.name.trim()) {
       setGeneralError('Please enter the patient name.')
       return
     }
 
-    // 5. Validate Phone Number
+    // 4. Validate Phone Number
     if (formData.phone.length !== 10) {
       setPhoneError('Please enter a valid 10-digit phone number.')
       return
     }
 
-    // 6. Validate Age (0 through 100)
+    // 5. Validate Age
     if (formData.age.trim()) {
       const ageNum = Number(formData.age)
       if (isNaN(ageNum) || ageNum < 0 || ageNum > 100 || !Number.isInteger(ageNum)) {
@@ -401,14 +423,14 @@ export const AppointmentCTA: React.FC = () => {
       return
     }
 
-    // 7. Validate Preferred Date & Time
+    // 6. Validate Preferred Date & Time
     if (!formData.date) {
-      setGeneralError('Please select a preferred date.')
+      setGeneralError('Please select a preferred appointment date.')
       return
     }
 
     if (!formData.time) {
-      setGeneralError('Please select a preferred time.')
+      setGeneralError('Please select a preferred appointment time.')
       return
     }
 
@@ -417,7 +439,6 @@ export const AppointmentCTA: React.FC = () => {
       return
     }
 
-    // Check time against branch operating interval and today's schedule
     const timeValidationResult = validateTimeSelection(formData.time, formData.date, targetBranch)
     if (timeValidationResult) {
       setTimeError(timeValidationResult)
@@ -425,7 +446,7 @@ export const AppointmentCTA: React.FC = () => {
       return
     }
 
-    // 8. Find selected branch WhatsApp number from Supabase branches table
+    // 7. Find branch WhatsApp reception contact number
     const cleanPhone = getCleanWhatsAppNumber(targetBranch.whatsapp_number)
 
     if (!cleanPhone || cleanPhone.length < 10) {
@@ -438,12 +459,18 @@ export const AppointmentCTA: React.FC = () => {
     const formattedDate = formatDateClean(formData.date)
     const formattedTime = formatTimeTo12Hour(formData.time)
 
+    // 8. Determine doctor/consultation line
+    const doctorConsultationLine =
+      selectedDoctorObj != null
+        ? `${selectedDoctorObj.name} (Senior Specialist)`
+        : 'General Consultation Doctor'
+
     // 9. Construct formatted WhatsApp message
     const messageLines = [
       'Hello Dr. Sheilas Eye Hospital, I would like to request an appointment.',
       '',
-      `Doctor: ${selectedDoctor.name}`,
-      `Branch: ${formData.branch}`,
+      `Branch: ${formData.branch} Hospital`,
+      `Doctor / Consultation: ${doctorConsultationLine}`,
       `Patient Name: ${formData.name.trim()}`,
     ]
 
@@ -474,7 +501,7 @@ export const AppointmentCTA: React.FC = () => {
     window.open(whatsappUrl, '_blank')
   }
 
-  // Branch contact helpers for left card
+  // Branch contact helpers for left reception card
   const palasaBranch = branches.find((b) => b.name.toLowerCase() === 'palasa')
   const sompetaBranch = branches.find((b) => b.name.toLowerCase() === 'sompeta')
   const ichapuramBranch = branches.find((b) => b.name.toLowerCase() === 'ichapuram')
@@ -486,11 +513,10 @@ export const AppointmentCTA: React.FC = () => {
   return (
     <section
       id="appointment"
-      className="bg-[#FFFFFF] py-24 md:py-36 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative"
+      className="bg-[#FFFFFF] py-20 md:py-32 text-[#1C242E] font-sans border-b border-[#E8E2D8] relative"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Left: Editorial Call to Action */}
           <div className="lg:col-span-4 flex flex-col">
             <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-3 block">
@@ -499,8 +525,9 @@ export const AppointmentCTA: React.FC = () => {
             <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.14] mb-5">
               Book a Clinical Appointment
             </h2>
-            <p className="text-[#5A687A] text-base leading-relaxed mb-8 font-normal">
-              Schedule your outpatient consultation or surgical evaluation with our ophthalmic surgeons across Palasa, Sompeta, and Ichapuram.
+            <p className="text-[#5A687A] text-sm sm:text-base leading-relaxed mb-8 font-normal">
+              Select your preferred hospital branch, specialist doctor, and convenient date. All 3
+              centers in Palasa, Sompeta, and Ichapuram provide experienced ophthalmic care.
             </p>
 
             {/* Direct Hospital Reception Card with Call Now actions */}
@@ -519,7 +546,7 @@ export const AppointmentCTA: React.FC = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-[11px] uppercase tracking-wider transition-colors shadow-xs"
                   >
                     <PhoneCall size={11} />
-                    <span>Call Now</span>
+                    <span>Call</span>
                   </a>
                 </div>
 
@@ -533,7 +560,7 @@ export const AppointmentCTA: React.FC = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-[11px] uppercase tracking-wider transition-colors shadow-xs"
                   >
                     <PhoneCall size={11} />
-                    <span>Call Now</span>
+                    <span>Call</span>
                   </a>
                 </div>
 
@@ -547,28 +574,52 @@ export const AppointmentCTA: React.FC = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-[11px] uppercase tracking-wider transition-colors shadow-xs"
                   >
                     <PhoneCall size={11} />
-                    <span>Call Now</span>
+                    <span>Call</span>
                   </a>
                 </div>
               </div>
               <span className="text-xs text-[#8A96A6] pt-2 border-t border-[#E8E2D8]">
-                Same-day walk-in consultations also available during OPD hours.
+                Same-day walk-in consultations are also available during OPD hours.
               </span>
             </div>
           </div>
 
-          {/* Right: Comprehensive Frontend Form */}
+          {/* Right: Branch-First Form */}
           <div className="lg:col-span-8">
             <div className="p-6 sm:p-10 rounded-3xl bg-[#FAF8F5] border border-[#E8E2D8] shadow-[0_8px_30px_rgba(28,36,46,0.05)] relative overflow-hidden">
               {/* Top accent line */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BE185D]/50 to-transparent" />
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                
-                {/* Row 1: Doctor (Selected First) & Branch (Dynamically Determined) */}
+                {/* ── ROW 1: SELECT BRANCH * & SELECT DOCTOR * ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  
-                  {/* 1. Doctor Selection */}
+                  {/* Branch Selection (Always Selectable for all 3 branches) */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5">
+                      <MapPin size={13} className="text-[#BE185D]" />
+                      <span>Select Branch *</span>
+                    </label>
+                    <select
+                      name="branch"
+                      value={formData.branch}
+                      onChange={handleBranchChange}
+                      required
+                      className={`w-full bg-white border border-[#E8E2D8] rounded-xl px-4 py-3 text-sm font-semibold ${
+                        formData.branch ? 'text-[#1C242E]' : 'text-stone-400'
+                      } focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors cursor-pointer shadow-xs`}
+                    >
+                      <option value="" disabled className="text-stone-400">
+                        Select Branch
+                      </option>
+                      {HOSPITAL_BRANCHES.map((bName) => (
+                        <option key={bName} value={bName} className="text-[#1C242E] bg-white font-medium">
+                          {bName} Hospital
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Doctor / Consultation Selection (Dynamically Resolved based on Branch + Date) */}
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5">
                       <Stethoscope size={13} className="text-[#BE185D]" />
@@ -579,90 +630,79 @@ export const AppointmentCTA: React.FC = () => {
                       value={formData.doctorId}
                       onChange={handleDoctorChange}
                       required
+                      disabled={!formData.branch}
                       className={`w-full bg-white border border-[#E8E2D8] rounded-xl px-4 py-3 text-sm font-medium ${
-                        formData.doctorId ? 'text-[#1C242E]' : 'text-[#8A96A6]'
-                      } focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors cursor-pointer shadow-xs`}
+                        formData.doctorId ? 'text-[#1C242E]' : 'text-stone-400'
+                      } focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors cursor-pointer shadow-xs disabled:bg-stone-50 disabled:cursor-not-allowed`}
                     >
-                      <option value="" disabled className="text-[#8A96A6] bg-[#FAF8F5]">
-                        {loading && doctors.length === 0
-                          ? 'Loading Doctors...'
-                          : 'Select Doctor'}
+                      <option value="" disabled className="text-stone-400">
+                        Select Doctor
                       </option>
-                      {doctors.map((doc) => {
-                        const isAvail = isDoctorAvailable(doc)
-                        const currentBranch = getDoctorCurrentBranch(doc)
-                        return (
-                          <option key={doc.id} value={doc.id} className="text-[#1C242E] bg-white font-medium">
-                            {doc.name} {isAvail ? `(Available - ${currentBranch} Center)` : '(Off-Duty)'}
+                      {formData.branch && availableSeniorDoctors.length > 0 ? (
+                        <>
+                          {availableSeniorDoctors.map((doc) => (
+                            <option
+                              key={doc.id}
+                              value={String(doc.id)}
+                              className="text-[#1C242E] bg-white font-medium"
+                            >
+                              {doc.name} (Senior Specialist)
+                            </option>
+                          ))}
+                          <option
+                            value={BRANCH_CONSULTATION_VALUE}
+                            className="text-[#5A687A] bg-white font-medium"
+                          >
+                            General Consultation Doctor
                           </option>
-                        )
-                      })}
+                        </>
+                      ) : formData.branch ? (
+                        <option
+                          value={BRANCH_CONSULTATION_VALUE}
+                          className="text-[#1C242E] bg-white font-medium"
+                        >
+                          General Consultation Doctor
+                        </option>
+                      ) : null}
                     </select>
                   </div>
-
-                  {/* 2. Branch Selection (Dynamic Based on Doctor) */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5">
-                      <MapPin size={13} className="text-[#BE185D]" />
-                      <span>Select Branch *</span>
-                    </label>
-                    <select
-                      name="branch"
-                      value={formData.branch}
-                      onChange={handleInputChange}
-                      required
-                      disabled={!formData.doctorId || !isDocAvail || availableBranches.length === 0}
-                      className={`w-full bg-white border border-[#E8E2D8] rounded-xl px-4 py-3 text-sm font-medium ${
-                        formData.branch ? 'text-[#1C242E]' : 'text-[#8A96A6]'
-                      } focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors cursor-pointer shadow-xs disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed`}
-                    >
-                      {!formData.doctorId ? (
-                        <option value="" disabled className="text-[#8A96A6] bg-[#FAF8F5]">
-                          Select a Doctor first
-                        </option>
-                      ) : !isDocAvail || availableBranches.length === 0 ? (
-                        <option value="" disabled className="text-[#8A96A6] bg-[#FAF8F5]">
-                          Doctor is currently Unavailable / Off-Duty
-                        </option>
-                      ) : (
-                        availableBranches.map((ab) => (
-                          <option key={ab.name} value={ab.name} className="text-[#1C242E] bg-white font-medium">
-                            {ab.name} Center (Available Today)
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-
                 </div>
 
-                {/* Doctor Availability Notice / Active Hours Chip */}
-                {selectedDoctor && (!isDocAvail || availableBranches.length === 0) && (
-                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                    <AlertCircle size={15} className="shrink-0 text-rose-600" />
-                    <span>
-                      <strong>{selectedDoctor.name}</strong> is currently off-duty and unavailable for outpatient consultations across all hospital branches. Please select another doctor or contact hospital reception.
-                    </span>
-                  </div>
-                )}
-
-                {isDocAvail && activeSchedule && (
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+                {/* Dynamic Doctor Availability Notice when a senior doctor is selected */}
+                {availableSeniorDoctors.length > 0 && selectedDoctorObj && (
+                  <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="shrink-0 text-emerald-600" />
+                      <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
                       <span>
-                        Available at <strong>{formData.branch} Center</strong>
+                        <strong>{selectedDoctorObj.name}</strong> is available for consultation at{' '}
+                        <strong>{formData.branch} Center</strong> on {selectedDayOfWeek}.
                       </span>
                     </div>
-                    {activeSchedule.start_time && (
-                      <span className="font-medium text-emerald-700">
-                        OPD: {activeSchedule.start_time} – {activeSchedule.end_time || '05:00 PM'}
+                    {activeDoctorSchedule?.start_time && (
+                      <span className="hidden sm:inline-block font-semibold text-emerald-800 shrink-0">
+                        OPD: {activeDoctorSchedule.start_time} –{' '}
+                        {activeDoctorSchedule.end_time || '05:00 PM'}
                       </span>
                     )}
                   </div>
                 )}
 
-                {/* Row 2: Patient Name & Phone Number */}
+                {/* Professional Fallback Notice when senior doctors are not consulting at this branch on the selected date */}
+                {formData.branch && availableSeniorDoctors.length === 0 && (
+                  <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-950 text-xs flex items-start gap-2.5 leading-relaxed">
+                    <Info size={16} className="shrink-0 text-amber-700 mt-0.5" />
+                    <div className="flex flex-col gap-1">
+                      <span className="font-heading font-bold text-amber-900">
+                        Clinical Consultation Available at {formData.branch} Center
+                      </span>
+                      <span>
+                        Our senior specialists may not be available at this centre today. However, experienced ophthalmic doctors are available to assess your condition and provide appropriate care. If your condition requires specialist intervention, our clinical team will coordinate your consultation with our senior specialists.
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── ROW 2: PATIENT NAME * & PHONE NUMBER * ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5">
@@ -701,14 +741,12 @@ export const AppointmentCTA: React.FC = () => {
                       } rounded-xl px-4 py-3 text-sm text-[#1C242E] placeholder-stone-400 outline-none transition-colors shadow-xs`}
                     />
                     {phoneError && (
-                      <span className="text-rose-600 text-xs mt-0.5">
-                        {phoneError}
-                      </span>
+                      <span className="text-rose-600 text-xs mt-0.5">{phoneError}</span>
                     )}
                   </div>
                 </div>
 
-                {/* Row 3: Age & Gender */}
+                {/* ── ROW 3: AGE & GENDER ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide">
@@ -722,17 +760,14 @@ export const AppointmentCTA: React.FC = () => {
                       min="0"
                       max="100"
                       step="1"
+                      placeholder="e.g. 45"
                       className={`w-full bg-white border ${
                         ageError
                           ? 'border-rose-500 focus:border-rose-400'
                           : 'border-[#E8E2D8] focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D]'
-                      } rounded-xl px-4 py-3 text-sm text-[#1C242E] outline-none transition-colors shadow-xs`}
+                      } rounded-xl px-4 py-3 text-sm text-[#1C242E] placeholder-stone-400 outline-none transition-colors shadow-xs`}
                     />
-                    {ageError && (
-                      <span className="text-rose-600 text-xs mt-0.5">
-                        {ageError}
-                      </span>
-                    )}
+                    {ageError && <span className="text-rose-600 text-xs mt-0.5">{ageError}</span>}
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -744,18 +779,26 @@ export const AppointmentCTA: React.FC = () => {
                       value={formData.gender}
                       onChange={handleInputChange}
                       className={`w-full bg-white border border-[#E8E2D8] rounded-xl px-4 py-3 text-sm font-medium ${
-                        formData.gender ? 'text-[#1C242E]' : 'text-[#8A96A6]'
+                        formData.gender ? 'text-[#1C242E]' : 'text-stone-400'
                       } focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors cursor-pointer shadow-xs`}
                     >
-                      <option value="" className="text-[#8A96A6] bg-[#FAF8F5]">Select Gender</option>
-                      <option value="Male" className="text-[#1C242E] bg-white font-medium">Male</option>
-                      <option value="Female" className="text-[#1C242E] bg-white font-medium">Female</option>
-                      <option value="Other" className="text-[#1C242E] bg-white font-medium">Other</option>
+                      <option value="" className="text-stone-400 bg-[#FAF8F5]">
+                        Select Gender
+                      </option>
+                      <option value="Male" className="text-[#1C242E] bg-white font-medium">
+                        Male
+                      </option>
+                      <option value="Female" className="text-[#1C242E] bg-white font-medium">
+                        Female
+                      </option>
+                      <option value="Other" className="text-[#1C242E] bg-white font-medium">
+                        Other
+                      </option>
                     </select>
                   </div>
                 </div>
 
-                {/* Row 4: Preferred Date & Preferred Time (Arbitrary Minute Input Bound by Branch Timings) */}
+                {/* ── ROW 4: PREFERRED DATE * & PREFERRED TIME * ── */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5">
@@ -767,15 +810,18 @@ export const AppointmentCTA: React.FC = () => {
                       name="date"
                       value={formData.date}
                       min={todayString}
-                      onChange={handleInputChange}
+                      onChange={handleDateChange}
                       required
-                      className="w-full bg-white border border-[#E8E2D8] rounded-xl px-4 py-3 text-sm text-[#1C242E] focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors cursor-pointer shadow-xs"
+                      className="w-full bg-white border border-[#E8E2D8] rounded-xl px-4 py-3 text-sm text-[#1C242E] focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors cursor-pointer shadow-xs font-medium"
                     />
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <label
+                        htmlFor="preferred-time-select"
+                        className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5"
+                      >
                         <Clock size={13} className="text-[#BE185D]" />
                         <span>Preferred Time *</span>
                       </label>
@@ -785,31 +831,41 @@ export const AppointmentCTA: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <input
-                      type="time"
+                    <select
+                      id="preferred-time-select"
                       name="time"
                       value={formData.time}
-                      min={timeBounds.min || undefined}
-                      max={timeBounds.max || undefined}
-                      step="60"
                       onChange={handleInputChange}
                       required
-                      disabled={!formData.branch || (selectedBranchObj ? !selectedBranchObj.is_open : false)}
                       className={`w-full bg-white border ${
                         timeError
                           ? 'border-rose-500 focus:border-rose-400'
                           : 'border-[#E8E2D8] focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D]'
-                      } rounded-xl px-4 py-3 text-sm text-[#1C242E] outline-none transition-colors cursor-pointer shadow-xs disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed`}
-                    />
-                    {timeError && (
-                      <span className="text-rose-600 text-xs mt-0.5">
-                        {timeError}
-                      </span>
-                    )}
+                      } rounded-xl px-4 py-3 text-sm font-medium ${
+                        formData.time ? 'text-[#1C242E]' : 'text-stone-400'
+                      } outline-none transition-colors cursor-pointer shadow-xs`}
+                    >
+                      <option value="" className="text-stone-400 bg-[#FAF8F5]">
+                        Select Preferred Time
+                      </option>
+                      {availableTimeSlots.map((slot) => (
+                        <option
+                          key={slot.value}
+                          value={slot.value}
+                          disabled={slot.isPast}
+                          className={`${
+                            slot.isPast ? 'text-stone-400 bg-stone-100' : 'text-[#1C242E] bg-white'
+                          } font-medium`}
+                        >
+                          {slot.label}
+                        </option>
+                      ))}
+                    </select>
+                    {timeError && <span className="text-rose-600 text-xs mt-0.5">{timeError}</span>}
                   </div>
                 </div>
 
-                {/* Row 5: Reason / Message (Optional) */}
+                {/* ── ROW 5: REASON FOR VISIT / MESSAGE (OPTIONAL) ── */}
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide">
                     Reason for Visit / Message (Optional)
@@ -819,7 +875,7 @@ export const AppointmentCTA: React.FC = () => {
                     rows={3}
                     value={formData.message}
                     onChange={handleInputChange}
-                    placeholder="e.g. Vision checkup, cataract surgery consultation, eye irritation, glasses power check"
+                    placeholder="e.g. Vision checkup, cataract surgery evaluation, eye irritation, refractive power check"
                     className="w-full bg-white border border-[#E8E2D8] rounded-xl px-4 py-3 text-sm text-[#1C242E] placeholder-stone-400 focus:border-[#BE185D] focus:ring-1 focus:ring-[#BE185D] outline-none transition-colors resize-none shadow-xs"
                   />
                 </div>
@@ -832,15 +888,10 @@ export const AppointmentCTA: React.FC = () => {
                   </div>
                 )}
 
-                {/* Submit Button (Directly opens WhatsApp) */}
+                {/* ── SUBMIT APPOINTMENT REQUEST ── */}
                 <button
                   type="submit"
-                  disabled={
-                    (availableBranches.length === 0 && Boolean(formData.doctorId)) ||
-                    Boolean(timeError) ||
-                    Boolean(ageError) ||
-                    Boolean(phoneError)
-                  }
+                  disabled={Boolean(timeError) || Boolean(ageError) || Boolean(phoneError)}
                   className="w-full py-4 rounded-xl bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-sm uppercase tracking-wider transition-all duration-300 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2.5"
                 >
                   <FaWhatsapp className="w-5 h-5 text-white" />
@@ -848,13 +899,12 @@ export const AppointmentCTA: React.FC = () => {
                 </button>
 
                 <p className="text-[11px] text-[#8A96A6] text-center mt-1">
-                  Submitting will instantly launch WhatsApp to the reception of the selected branch with your consultation details.
+                  Submitting will instantly open WhatsApp to the reception at {formData.branch || 'the selected'}{' '}
+                  Center with your appointment request.
                 </p>
-
               </form>
             </div>
           </div>
-
         </div>
       </div>
     </section>

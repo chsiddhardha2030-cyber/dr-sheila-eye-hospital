@@ -4,8 +4,9 @@ import { Award, Stethoscope, MapPin, Clock } from 'lucide-react'
 import { useHospitalData } from '../context/HospitalDataContext'
 import {
   isDoctorAvailable,
-  getDoctorCurrentBranch,
+  getDoctorBranchForDate,
   getDoctorBranchSchedule,
+  getDayOfWeek,
 } from '../lib/doctorAvailability'
 
 export const Doctors: React.FC = () => {
@@ -28,6 +29,8 @@ export const Doctors: React.FC = () => {
     },
   ]
 
+  const todayDay = getDayOfWeek()
+
   return (
     <section
       id="doctors"
@@ -43,30 +46,37 @@ export const Doctors: React.FC = () => {
             Experienced Ophthalmic Surgeons
           </h2>
           <p className="text-[#5A687A] text-sm max-w-md font-normal leading-relaxed">
-            Leading clinical precision, microsurgical care, and dedicated patient treatment across Palasa, Sompeta, Ichapuram.
+            Leading clinical precision, microsurgical care, and dedicated patient treatment across
+            Palasa, Sompeta, Ichapuram.
           </p>
         </div>
 
-        {/* Prominent & Elegant Doctor Presentation with 50/50 Rectangular Layout */}
+        {/* Doctor Presentation with 50/50 Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 max-w-6xl mx-auto items-stretch">
           {staticDoctors.map((staticDoc, index) => {
             // Match with dynamic Supabase record
-            const dbDoc = dbDoctors.find((d) =>
-              d.name.toLowerCase().includes(staticDoc.name.toLowerCase().replace('dr. ', '')) ||
-              staticDoc.name.toLowerCase().includes(d.name.toLowerCase().replace('dr. ', ''))
+            const dbDoc = dbDoctors.find(
+              (d) =>
+                d.name.toLowerCase().includes(staticDoc.name.toLowerCase().replace('dr. ', '')) ||
+                staticDoc.name.toLowerCase().includes(d.name.toLowerCase().replace('dr. ', ''))
             )
 
             const isAvailable = isDoctorAvailable(dbDoc)
-            const currentBranch = getDoctorCurrentBranch(dbDoc)
+            const todayStation = dbDoc
+              ? getDoctorBranchForDate(dbDoc, new Date(), schedules)
+              : 'Palasa'
+            const isOffToday = todayStation.toLowerCase() === 'off'
+
             const branchObj = branches.find(
-              (b) => b.name.toLowerCase() === currentBranch.toLowerCase()
+              (b) => b.name.toLowerCase() === todayStation.toLowerCase()
             )
             const isBranchOpen = branchObj ? branchObj.is_open : true
-            const scheduleInfo = dbDoc
-              ? getDoctorBranchSchedule(dbDoc.id, currentBranch, dbDoc, schedules, branches)
-              : null
+            const scheduleInfo =
+              dbDoc && !isOffToday
+                ? getDoctorBranchSchedule(dbDoc.id, todayStation, dbDoc, schedules, branches)
+                : null
 
-            const isDoctorActiveToday = isAvailable && isBranchOpen
+            const isDoctorActiveToday = isAvailable && !isOffToday && isBranchOpen
 
             return (
               <motion.div
@@ -80,7 +90,7 @@ export const Doctors: React.FC = () => {
                 {/* Subtle top accent gradient */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#BE185D]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
 
-                {/* Left 50%: Proper Rectangular Doctor Image */}
+                {/* Left 50%: Doctor Image */}
                 <div className="w-full sm:w-1/2 min-h-[260px] sm:min-h-full relative overflow-hidden bg-stone-100 shrink-0">
                   <img
                     src={staticDoc.image}
@@ -89,8 +99,8 @@ export const Doctors: React.FC = () => {
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  
-                  {/* Subtle Doctor Icon Overlay */}
+
+                  {/* Doctor Icon Overlay */}
                   <div className="absolute bottom-3 left-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md border border-white/80 flex items-center justify-center text-[#BE185D] shadow-sm">
                     <Stethoscope size={13} />
                   </div>
@@ -109,6 +119,8 @@ export const Doctors: React.FC = () => {
                         className={`text-[10px] font-heading font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border ${
                           isDoctorActiveToday
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : isAvailable && isOffToday
+                            ? 'bg-stone-100 text-stone-600 border-stone-200'
                             : isAvailable && !isBranchOpen
                             ? 'bg-amber-50 text-amber-800 border-amber-200'
                             : 'bg-stone-100 text-stone-600 border-stone-200'
@@ -116,8 +128,10 @@ export const Doctors: React.FC = () => {
                       >
                         {isDoctorActiveToday
                           ? '● Available'
+                          : isAvailable && isOffToday
+                          ? `○ Off Today (${todayDay})`
                           : isAvailable && !isBranchOpen
-                          ? `○ ${currentBranch} Center Closed`
+                          ? `○ ${todayStation} Center Closed`
                           : '○ Off-Duty'}
                       </span>
                     </div>
@@ -126,32 +140,43 @@ export const Doctors: React.FC = () => {
                       {staticDoc.name}
                     </h3>
 
-                    <p className="text-[#5A687A] text-sm font-medium mb-3">
-                      {staticDoc.title}
-                    </p>
+                    <p className="text-[#5A687A] text-sm font-medium mb-3">{staticDoc.title}</p>
 
                     {/* Dynamic Location & Timings Indicator */}
                     {isDoctorActiveToday ? (
                       <div className="mb-4 p-2.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D8] text-xs text-[#5A687A] flex flex-col gap-1.5 text-left">
                         <div className="flex items-center gap-1.5 text-[#1C242E] font-medium">
                           <MapPin size={13} className="text-[#BE185D] shrink-0" />
-                          <span>Stationed Today: <strong>{currentBranch} Center</strong></span>
+                          <span>
+                            Stationed Today: <strong>{todayStation} Center</strong>
+                          </span>
                         </div>
                         {scheduleInfo && scheduleInfo.start_time && (
                           <div className="flex items-center gap-1.5 text-[11px] text-[#5A687A]">
                             <Clock size={12} className="text-[#BE185D] shrink-0" />
-                            <span>OPD Hours: {scheduleInfo.start_time} – {scheduleInfo.end_time || '05:00 PM'}</span>
+                            <span>
+                              OPD Hours: {scheduleInfo.start_time} –{' '}
+                              {scheduleInfo.end_time || '05:00 PM'}
+                            </span>
                           </div>
                         )}
+                      </div>
+                    ) : isAvailable && isOffToday ? (
+                      <div className="mb-4 p-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-600 flex items-center gap-2 text-left">
+                        <Clock size={13} className="text-stone-400 shrink-0" />
+                        <span>Scheduled Off on {todayDay}s</span>
                       </div>
                     ) : isAvailable && !isBranchOpen ? (
                       <div className="mb-4 p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/70 text-xs text-amber-900 flex flex-col gap-1 text-left">
                         <div className="flex items-center gap-1.5 font-medium">
                           <MapPin size={13} className="text-amber-700 shrink-0" />
-                          <span>Stationed: <strong>{currentBranch} Center</strong></span>
+                          <span>
+                            Stationed: <strong>{todayStation} Center</strong>
+                          </span>
                         </div>
                         <span className="text-[11px] text-amber-800">
-                          {currentBranch} Center is marked as closed today. Consultations resume when the center opens.
+                          {todayStation} Center is closed today. Consultations resume when center
+                          opens.
                         </span>
                       </div>
                     ) : (
@@ -175,3 +200,4 @@ export const Doctors: React.FC = () => {
     </section>
   )
 }
+

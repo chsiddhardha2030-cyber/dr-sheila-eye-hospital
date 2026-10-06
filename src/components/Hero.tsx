@@ -90,37 +90,71 @@ export const Hero: React.FC = () => {
       <div className="relative z-20 max-w-7xl w-full mx-auto px-6 md:px-12 flex flex-col justify-center h-full">
         <div className="max-w-3xl flex flex-col items-start">
 
-          {/* ── Dynamic Branch Timing Pills (Above Hero Heading) ────────── */}
+          {/* ── Dynamic Continuous Branch Status Ticker (Above Hero Heading) ── */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-            className="flex flex-col items-start gap-2 mb-6 sm:mb-8"
+            className="w-full max-w-full overflow-hidden mb-6 sm:mb-8 relative py-1"
+            style={{
+              maskImage: 'linear-gradient(to right, transparent, black 3%, black 97%, transparent)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent, black 3%, black 97%, transparent)',
+            }}
           >
-            {branchTimings.map((b) => (
-              <div
-                key={b.name}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#E8E2D8] shadow-[0_2px_8px_rgba(28,36,46,0.04)] text-xs sm:text-[13px]"
-              >
-                <span
-                  className={`w-2 h-2 rounded-full shrink-0 ${
-                    b.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-400'
-                  }`}
-                />
-                <span className="font-heading font-bold text-[#1C242E]">
-                  {b.name}:
-                </span>
-                {b.isOpen ? (
-                  <span className="text-[#5A687A] font-medium">
-                    Open today &bull; <strong className="text-[#1C242E] font-semibold">{b.timing}</strong>
-                  </span>
-                ) : (
-                  <span className="text-rose-600 font-medium">
-                    Closed today
-                  </span>
-                )}
-              </div>
-            ))}
+            <div className="animate-branch-ticker flex items-center">
+              {[0, 1].map((setIndex) => (
+                <div key={setIndex} className="flex items-center gap-3 shrink-0 pr-3">
+                  {branchTimings.map((b, idx) => (
+                    <div
+                      key={`${setIndex}-a-${b.name}-${idx}`}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-[#E8E2D8] shadow-[0_2px_8px_rgba(28,36,46,0.04)] text-xs sm:text-[13px] shrink-0 whitespace-nowrap"
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          b.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-400'
+                        }`}
+                      />
+                      <span className="font-heading font-bold text-[#1C242E]">
+                        {b.name}:
+                      </span>
+                      {b.isOpen ? (
+                        <span className="text-[#5A687A] font-medium">
+                          Open today &bull; <strong className="text-[#1C242E] font-semibold">{b.timing}</strong>
+                        </span>
+                      ) : (
+                        <span className="text-rose-600 font-medium">
+                          Closed today
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {branchTimings.map((b, idx) => (
+                    <div
+                      key={`${setIndex}-b-${b.name}-${idx}`}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-[#E8E2D8] shadow-[0_2px_8px_rgba(28,36,46,0.04)] text-xs sm:text-[13px] shrink-0 whitespace-nowrap"
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          b.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-400'
+                        }`}
+                      />
+                      <span className="font-heading font-bold text-[#1C242E]">
+                        {b.name}:
+                      </span>
+                      {b.isOpen ? (
+                        <span className="text-[#5A687A] font-medium">
+                          Open today &bull; <strong className="text-[#1C242E] font-semibold">{b.timing}</strong>
+                        </span>
+                      ) : (
+                        <span className="text-rose-600 font-medium">
+                          Closed today
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </motion.div>
 
           {/* Large Confident Display Headline (Manrope) */}
