@@ -175,7 +175,7 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
             className="text-[#5A687A] text-lg sm:text-xl font-normal leading-relaxed max-w-lg mb-9"
           >
-            Advanced eye care with expertise, technology and compassion.
+            Advanced eye care with surgical expertise.
           </motion.p>
 
           {/* Minimal CTAs */}
