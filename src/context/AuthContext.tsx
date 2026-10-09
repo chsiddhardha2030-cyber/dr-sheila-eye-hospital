@@ -13,6 +13,20 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const ADMIN_STORAGE_KEY = 'sheila_admin_auth_session'
+const SESSION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+
+// Pre-computed SHA-256 hashes for credential verification
+const TARGET_USER_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' // 'admin'
+const TARGET_PASS_HASH = '70264a64181db979fd4661565293ed71ff915ea16fddcf207b2ca2682a93fbd0' // '9441887261'
+const TARGET_COMBO_HASH = 'bfa4e3ef43265617694d3a1ef178917450a82b516460f3cc9450f6dce158846c' // 'admin:9441887261:sheila_eye_hospital_salt_2026'
+
+async function sha256(str: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(str)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
@@ -20,30 +34,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check active Supabase session
+    // Check active session on initial load / refresh
     const initAuth = async () => {
       try {
+        // 1. Check Supabase Auth session
         const { data: { session: currentSession } } = await supabase.auth.getSession()
-        if (currentSession) {
+        if (currentSession && currentSession.user) {
           setSession(currentSession)
           setUser(currentSession.user)
-        } else {
-          // Check local persisted session fallback for temporary development admin
-          const saved = localStorage.getItem(ADMIN_STORAGE_KEY)
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved)
-              if (parsed && parsed.email) {
-                setUser({ id: 'admin-temp-id', email: parsed.email } as User)
-                setSession({ access_token: 'valid', user: { id: 'admin-temp-id', email: parsed.email } } as Session)
+          setLoading(false)
+          return
+        }
+
+        // 2. Check local authenticated admin session
+        const saved = localStorage.getItem(ADMIN_STORAGE_KEY)
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved)
+            if (
+              parsed &&
+              parsed.token &&
+              parsed.user &&
+              parsed.expiresAt &&
+              Date.now() < parsed.expiresAt
+            ) {
+              const expectedToken = await sha256(`session:${parsed.user.id}:${parsed.createdAt}`)
+              if (parsed.token === expectedToken) {
+                setUser(parsed.user as User)
+                setSession({
+                  access_token: parsed.token,
+                  user: parsed.user,
+                  token_type: 'bearer',
+                  expires_in: Math.floor((parsed.expiresAt - Date.now()) / 1000),
+                  refresh_token: '',
+                } as unknown as Session)
+              } else {
+                localStorage.removeItem(ADMIN_STORAGE_KEY)
               }
-            } catch {
+            } else {
               localStorage.removeItem(ADMIN_STORAGE_KEY)
             }
+          } catch {
+            localStorage.removeItem(ADMIN_STORAGE_KEY)
           }
         }
       } catch (err) {
-        console.error('Error getting auth session:', err)
+        console.error('Error verifying auth session:', err)
       } finally {
         setLoading(false)
       }
@@ -52,10 +88,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
-      setUser(newSession?.user ?? null)
       if (newSession) {
-        localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({ email: newSession.user.email }))
+        setSession(newSession)
+        setUser(newSession.user ?? null)
       }
     })
 
@@ -66,41 +101,103 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (usernameOrEmail: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Normalize username if entered 'admin' or variations
-      const trimmedInput = usernameOrEmail.trim()
-      const isEmail = trimmedInput.includes('@')
-      const email = isEmail ? trimmedInput : `${trimmedInput.toLowerCase()}@sheilaeyehospital.com`
+      const trimmedUser = usernameOrEmail.trim()
+      const trimmedPass = password.trim()
 
-      // 1. Try Supabase Auth signInWithPassword
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: isEmail ? email : 'admin.sheilaeye@gmail.com',
-        password,
-      })
+      if (!trimmedUser || !trimmedPass) {
+        return { success: false, error: 'Invalid username or password.' }
+      }
 
-      if (!error && data.user && data.session) {
-        setUser(data.user)
-        setSession(data.session)
-        localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({ email: data.user.email }))
+      // 1. Check if username matches 'admin' or admin email aliases
+      const normalizedUser = trimmedUser.toLowerCase()
+      const isEmail = normalizedUser.includes('@')
+      const targetEmail = isEmail ? normalizedUser : 'admin@sheilaeyehospital.com'
+
+      // 2. Attempt Supabase Auth signInWithPassword if configured in Supabase Auth
+      try {
+        const { data: sbData, error: sbError } = await supabase.auth.signInWithPassword({
+          email: isEmail ? normalizedUser : 'admin.sheilaeye@gmail.com',
+          password: trimmedPass,
+        })
+
+        if (!sbError && sbData.user && sbData.session) {
+          setUser(sbData.user)
+          setSession(sbData.session)
+          const now = Date.now()
+          const sessionToken = await sha256(`session:${sbData.user.id}:${now}`)
+          localStorage.setItem(
+            ADMIN_STORAGE_KEY,
+            JSON.stringify({
+              token: sessionToken,
+              user: sbData.user,
+              createdAt: now,
+              expiresAt: now + SESSION_EXPIRY_MS,
+            })
+          )
+          return { success: true }
+        }
+      } catch {
+        // Fall through to secure hash verification
+      }
+
+      // 3. Secure SHA-256 verification for the authorized administrator
+      const [userHash, passHash, comboHash] = await Promise.all([
+        sha256(normalizedUser),
+        sha256(trimmedPass),
+        sha256(`${normalizedUser}:${trimmedPass}:sheila_eye_hospital_salt_2026`),
+      ])
+
+      const isUserMatch =
+        userHash === TARGET_USER_HASH ||
+        normalizedUser === 'admin@sheilaeyehospital.com' ||
+        normalizedUser === 'admin.sheilaeye@gmail.com'
+
+      const isPassMatch = passHash === TARGET_PASS_HASH
+      const isComboMatch = comboHash === TARGET_COMBO_HASH || (isUserMatch && isPassMatch)
+
+      if (isUserMatch && isPassMatch && isComboMatch) {
+        const now = Date.now()
+        const adminUser: User = {
+          id: 'admin-sheila-hospital-01',
+          aud: 'authenticated',
+          role: 'authenticated',
+          email: targetEmail,
+          email_confirmed_at: new Date().toISOString(),
+          app_metadata: { provider: 'email', role: 'admin' },
+          user_metadata: { name: 'Hospital Administrator', role: 'admin' },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as unknown as User
+
+        const sessionToken = await sha256(`session:${adminUser.id}:${now}`)
+        const adminSession: Session = {
+          access_token: sessionToken,
+          token_type: 'bearer',
+          expires_in: Math.floor(SESSION_EXPIRY_MS / 1000),
+          refresh_token: '',
+          user: adminUser,
+        } as unknown as Session
+
+        setUser(adminUser)
+        setSession(adminSession)
+
+        localStorage.setItem(
+          ADMIN_STORAGE_KEY,
+          JSON.stringify({
+            token: sessionToken,
+            user: adminUser,
+            createdAt: now,
+            expiresAt: now + SESSION_EXPIRY_MS,
+          })
+        )
+
         return { success: true }
       }
 
-      // 2. Fallback for temporary dev credentials if Supabase email confirmation is required or password '123'
-      if (
-        (trimmedInput.toLowerCase() === 'admin' || trimmedInput.toLowerCase() === 'admin.sheilaeye@gmail.com' || trimmedInput.toLowerCase() === 'admin@hospital.com') &&
-        (password === '123' || password === 'admin_password_123')
-      ) {
-        const dummyUser = { id: 'admin-dev-01', email: 'admin@sheilaeyehospital.com' } as User
-        const dummySession = { access_token: 'admin-session-token', user: dummyUser } as Session
-        setUser(dummyUser)
-        setSession(dummySession)
-        localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify({ email: dummyUser.email }))
-        return { success: true }
-      }
-
-      return { success: false, error: error?.message || 'Invalid username or password' }
+      return { success: false, error: 'Invalid username or password.' }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Login failed'
-      return { success: false, error: msg }
+      console.error('Login error:', err)
+      return { success: false, error: 'Invalid username or password.' }
     }
   }
 
@@ -130,3 +227,4 @@ export const useAuth = () => {
   }
   return context
 }
+
