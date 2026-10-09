@@ -209,15 +209,15 @@ export const TestsAndSurgery: React.FC = () => {
     {
       id: 'diagnostics',
       number: '03',
-      name: 'Diagnostic Tests',
-      shortTag: 'Comprehensive Diagnostics',
+      name: 'Diagnostic & Pre-Op Care',
+      shortTag: 'Pre-Surgical & Diagnostics',
       icon: Activity,
-      title: 'Precision Diagnostic Facilities & Eye Tests',
+      title: 'Precision Pre-Operative Diagnostic Facilities & Eye Tests',
       subtitle:
-        'Accurate clinical evaluations using calibrated ophthalmic measurement and imaging instruments across all our centers.',
+        'Accurate pre-surgical assessments and ocular evaluations using calibrated ophthalmic measurement and imaging instruments across all our centers.',
       palasaOnly: false,
       scopeBadge: 'All Regional Centers',
-      facilityCount: '6 Diagnostic Tests',
+      facilityCount: '6 Diagnostic Facilities',
       image: '/optimized/clinics/sompeta/DSC_9999.jpeg',
       imageCaption: 'Advanced Ophthalmic Diagnostic Suite',
       items: [
@@ -324,7 +324,7 @@ export const TestsAndSurgery: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-3.5 block"
           >
-            Clinical Infrastructure
+            Surgical &amp; Clinical Infrastructure
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -333,7 +333,7 @@ export const TestsAndSurgery: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.14] mb-5"
           >
-            Diagnostic &amp; Surgical Facilities
+            Surgical &amp; Operating Facilities
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -342,7 +342,7 @@ export const TestsAndSurgery: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-[#5A687A] text-base sm:text-lg font-normal leading-relaxed"
           >
-            Explore our specialized clinical divisions. Select a facility category below to view detailed equipment, diagnostic procedures, and surgical care capabilities.
+            Explore our specialized microsurgical suites, sterile operation theatre complex, and clinical infrastructure. Select a category below to view detailed surgical procedures, OT facilities, laser care, and pre-operative diagnostic evaluations.
           </motion.p>
         </div>
 

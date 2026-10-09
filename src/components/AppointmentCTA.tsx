@@ -19,54 +19,12 @@ import {
   getDayOfWeek,
   getAvailableDoctorsForBranchAndDate,
   getDoctorBranchSchedule,
+  parseTimeToMinutes,
+  minutesToTime24,
+  formatTimeTo12Hour,
+  getBranchTimeBounds,
+  generateAvailableTimeSlots,
 } from '../lib/doctorAvailability'
-
-// Helper to parse time strings to minutes from midnight
-const parseTimeToMinutes = (timeStr: string | null | undefined): number | null => {
-  if (!timeStr) return null
-  const trimmed = timeStr.trim()
-  if (!trimmed) return null
-
-  const match12 = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i)
-  if (match12) {
-    let hours = parseInt(match12[1], 10)
-    const minutes = parseInt(match12[2], 10)
-    const meridiem = match12[3].toUpperCase()
-    if (meridiem === 'PM' && hours < 12) hours += 12
-    if (meridiem === 'AM' && hours === 12) hours = 0
-    return hours * 60 + minutes
-  }
-
-  const match24 = trimmed.match(/^(\d{1,2}):(\d{2})/)
-  if (match24) {
-    const hours = parseInt(match24[1], 10)
-    const minutes = parseInt(match24[2], 10)
-    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
-      return hours * 60 + minutes
-    }
-  }
-
-  return null
-}
-
-const minutesToTime24 = (mins: number): string => {
-  const h = Math.floor(mins / 60)
-  const m = mins % 60
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
-}
-
-const formatTimeTo12Hour = (time24: string): string => {
-  if (!time24) return ''
-  if (/AM|PM/i.test(time24)) return time24
-  const parts = time24.split(':')
-  if (parts.length < 2) return time24
-  const hour = parseInt(parts[0], 10)
-  const minute = parts[1]
-  if (isNaN(hour)) return time24
-  const period = hour >= 12 ? 'PM' : 'AM'
-  const hour12 = hour % 12 === 0 ? 12 : hour % 12
-  return `${hour12.toString().padStart(2, '0')}:${minute} ${period}`
-}
 
 const formatDateClean = (dateStr: string): string => {
   if (!dateStr) return ''
@@ -202,83 +160,115 @@ export const AppointmentCTA: React.FC = () => {
     )
   }, [selectedDoctorObj, formData.branch, schedules, branches, formData.date])
 
-  // Branch opening and closing time in minutes (0-1439)
-  const branchOpeningMins = useMemo(() => {
-    if (!selectedBranchObj?.opening_time) return 540 // Default 09:00 AM
-    return parseTimeToMinutes(selectedBranchObj.opening_time) ?? 540
-  }, [selectedBranchObj])
-
-  const branchClosingMins = useMemo(() => {
-    if (!selectedBranchObj?.closing_time) return 1020 // Default 05:00 PM
-    return parseTimeToMinutes(selectedBranchObj.closing_time) ?? 1020
-  }, [selectedBranchObj])
-
-  const formattedBranchOpen = useMemo(() => {
-    return formatTimeTo12Hour(minutesToTime24(branchOpeningMins))
-  }, [branchOpeningMins])
-
-  const formattedBranchClose = useMemo(() => {
-    return formatTimeTo12Hour(minutesToTime24(branchClosingMins))
-  }, [branchClosingMins])
+  // Dynamically resolve branch opening & closing bounds:
+  // - If a branch is selected: uses that branch's configured hours from the Admin Panel / DB
+  // - If no branch is selected: uses earliest opening and latest closing time across all branches
+  const timeBounds = useMemo(() => {
+    return getBranchTimeBounds(selectedBranchObj, branches)
+  }, [selectedBranchObj, branches])
 
   // Generate clean 30-minute time slots in 12-hour AM/PM format
   const availableTimeSlots = useMemo(() => {
-    const slots: { value: string; label: string; isPast: boolean }[] = []
-    const startMins = selectedBranchObj ? branchOpeningMins : 540 // 09:00 AM default
-    const endMins = selectedBranchObj ? branchClosingMins : 1200 // 08:00 PM default if no branch selected
+    return generateAvailableTimeSlots(timeBounds, formData.date, todayString)
+  }, [timeBounds, formData.date, todayString])
 
-    const now = new Date()
-    const isToday = formData.date === todayString
-    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+  // Branch-wise opening and closing hours summary
+  const branchHoursSummary = useMemo(() => {
+    const list = HOSPITAL_BRANCHES.map((bName) => {
+      const bObj = branches.find(
+        (b) => b.name.trim().toLowerCase() === bName.trim().toLowerCase()
+      )
+      const isOpen = bObj ? bObj.is_open : true
+      const defaultClose = bName.toLowerCase() === 'palasa' ? '10:00 PM' : '05:00 PM'
+      const openTime = bObj?.opening_time
+        ? formatTimeTo12Hour(bObj.opening_time, '09:00 AM')
+        : '09:00 AM'
+      const closeTime = bObj?.closing_time
+        ? formatTimeTo12Hour(bObj.closing_time, defaultClose)
+        : defaultClose
+      const isSelected =
+        Boolean(formData.branch) &&
+        formData.branch.trim().toLowerCase() === bName.trim().toLowerCase()
 
-    for (let m = startMins; m <= endMins; m += 30) {
-      const time12 = formatTimeTo12Hour(minutesToTime24(m))
-      const isPast = isToday && m < nowMinutes
-      slots.push({
-        value: time12,
-        label: isPast ? `${time12} (Passed)` : time12,
-        isPast,
-      })
+      return {
+        name: bName,
+        isOpen,
+        openTime,
+        closeTime,
+        isSelected,
+      }
+    })
+
+    // If a branch is selected, place the selected branch first in the list
+    if (formData.branch) {
+      return [
+        ...list.filter((b) => b.isSelected),
+        ...list.filter((b) => !b.isSelected),
+      ]
     }
-    return slots
-  }, [selectedBranchObj, branchOpeningMins, branchClosingMins, formData.date, todayString])
+    return list
+  }, [branches, formData.branch])
+
+  // If a time was selected but falls outside the current time bounds after branch/date change, clear it
+  useEffect(() => {
+    if (!formData.time) return
+    const userMins = parseTimeToMinutes(formData.time)
+    if (userMins === null) {
+      setFormData((prev) => ({ ...prev, time: '' }))
+      return
+    }
+    if (userMins < timeBounds.openingMins || userMins > timeBounds.closingMins) {
+      setFormData((prev) => ({ ...prev, time: '' }))
+    }
+  }, [timeBounds.openingMins, timeBounds.closingMins, formData.time])
 
   // Time validation function
   const validateTimeSelection = useCallback(
     (timeVal: string, dateVal: string, branchObj: Branch | null): string => {
-      if (!branchObj) return ''
       if (!timeVal) return ''
 
       const userMins = parseTimeToMinutes(timeVal)
       if (userMins === null) return 'Please enter a valid appointment time.'
 
-      const openMins = parseTimeToMinutes(branchObj.opening_time) ?? 540
-      const closeMins = parseTimeToMinutes(branchObj.closing_time) ?? 1020
-      const openStr = formatTimeTo12Hour(minutesToTime24(openMins))
-      const closeStr = formatTimeTo12Hour(minutesToTime24(closeMins))
+      if (branchObj) {
+        const openMins = parseTimeToMinutes(branchObj.opening_time) ?? 540
+        const closeMins = parseTimeToMinutes(branchObj.closing_time) ?? 1020
+        const openStr = formatTimeTo12Hour(minutesToTime24(openMins))
+        const closeStr = formatTimeTo12Hour(minutesToTime24(closeMins))
 
-      if (userMins < openMins) {
-        return `Selected time (${formatTimeTo12Hour(
-          timeVal
-        )}) is before opening time (${openStr}). Operating hours are ${openStr} – ${closeStr}.`
-      }
-
-      if (userMins > closeMins) {
-        return `Selected time (${formatTimeTo12Hour(
-          timeVal
-        )}) is after closing time (${closeStr}). Operating hours are ${openStr} – ${closeStr}.`
-      }
-
-      if (dateVal === todayString) {
-        const now = new Date()
-        const nowMins = now.getHours() * 60 + now.getMinutes()
-        if (nowMins >= closeMins) {
-          return `Operating hours for today at ${branchObj.name} Center have ended (${openStr} – ${closeStr}). Please choose a future date.`
-        }
-        if (userMins < nowMins) {
+        if (userMins < openMins) {
           return `Selected time (${formatTimeTo12Hour(
             timeVal
-          )}) has already passed for today. Please select an upcoming time.`
+          )}) is before opening time (${openStr}). Operating hours are ${openStr} – ${closeStr}.`
+        }
+
+        if (userMins > closeMins) {
+          return `Selected time (${formatTimeTo12Hour(
+            timeVal
+          )}) is after closing time (${closeStr}). Operating hours are ${openStr} – ${closeStr}.`
+        }
+
+        if (dateVal === todayString) {
+          const now = new Date()
+          const nowMins = now.getHours() * 60 + now.getMinutes()
+          if (nowMins >= closeMins) {
+            return `Operating hours for today at ${branchObj.name} Center have ended (${openStr} – ${closeStr}). Please choose a future date.`
+          }
+          if (userMins < nowMins) {
+            return `Selected time (${formatTimeTo12Hour(
+              timeVal
+            )}) has already passed for today. Please select an upcoming time.`
+          }
+        }
+      } else {
+        if (dateVal === todayString) {
+          const now = new Date()
+          const nowMins = now.getHours() * 60 + now.getMinutes()
+          if (userMins < nowMins) {
+            return `Selected time (${formatTimeTo12Hour(
+              timeVal
+            )}) has already passed for today. Please select an upcoming time.`
+          }
         }
       }
 
@@ -289,7 +279,7 @@ export const AppointmentCTA: React.FC = () => {
 
   // Re-evaluate time error whenever time, date, or branch changes
   useEffect(() => {
-    if (formData.time && selectedBranchObj) {
+    if (formData.time) {
       const err = validateTimeSelection(formData.time, formData.date, selectedBranchObj)
       setTimeError(err)
     } else {
@@ -817,20 +807,13 @@ export const AppointmentCTA: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <label
-                        htmlFor="preferred-time-select"
-                        className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5"
-                      >
-                        <Clock size={13} className="text-[#BE185D]" />
-                        <span>Preferred Time *</span>
-                      </label>
-                      {selectedBranchObj && (
-                        <span className="text-[11px] text-[#5A687A] font-medium">
-                          Hours: {formattedBranchOpen} – {formattedBranchClose}
-                        </span>
-                      )}
-                    </div>
+                    <label
+                      htmlFor="preferred-time-select"
+                      className="text-xs font-heading font-semibold text-[#1C242E] tracking-wide flex items-center gap-1.5"
+                    >
+                      <Clock size={13} className="text-[#BE185D]" />
+                      <span>Preferred Time *</span>
+                    </label>
                     <select
                       id="preferred-time-select"
                       name="time"
@@ -862,6 +845,64 @@ export const AppointmentCTA: React.FC = () => {
                       ))}
                     </select>
                     {timeError && <span className="text-rose-600 text-xs mt-0.5">{timeError}</span>}
+
+                    {/* Dynamic Branch-Wise Operating & Closing Hours Guide */}
+                    <div className="mt-1 p-3 rounded-xl bg-white border border-[#E8E2D8] text-xs shadow-xs">
+                      {formData.branch ? (
+                        <div className="flex items-center gap-1.5 font-semibold text-[#BE185D] text-[11px] mb-2 pb-1.5 border-b border-[#E8E2D8]/70">
+                          <MapPin size={12} className="shrink-0 text-[#BE185D]" />
+                          <span>
+                            Selected branch: <strong>{formData.branch}</strong>
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 font-semibold text-[#1C242E] text-[11px] mb-2 pb-1.5 border-b border-[#E8E2D8]/70">
+                          <Clock size={12} className="shrink-0 text-[#BE185D]" />
+                          <span>Branch Operating Hours:</span>
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-1.5 text-[11px]">
+                        {branchHoursSummary.map((bh) => (
+                          <div
+                            key={bh.name}
+                            className={`flex items-center justify-between py-1 px-2 rounded-lg transition-colors ${
+                              bh.isSelected
+                                ? 'bg-rose-50 border border-[#BE185D]/20 text-[#BE185D]'
+                                : 'text-[#5A687A]'
+                            }`}
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                  bh.isOpen
+                                    ? bh.isSelected
+                                      ? 'bg-[#BE185D]'
+                                      : 'bg-emerald-500'
+                                    : 'bg-rose-400'
+                                }`}
+                              />
+                              <span
+                                className={
+                                  bh.isSelected
+                                    ? 'text-[#BE185D] font-bold'
+                                    : 'text-[#1C242E] font-medium'
+                                }
+                              >
+                                {bh.name}:
+                              </span>
+                            </span>
+                            <span
+                              className={`tabular-nums ${
+                                bh.isSelected ? 'text-[#BE185D] font-bold' : 'text-[#5A687A]'
+                              }`}
+                            >
+                              {bh.isOpen ? `${bh.openTime} – ${bh.closeTime}` : 'Closed'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 

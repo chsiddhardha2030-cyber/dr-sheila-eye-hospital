@@ -37,7 +37,7 @@ export const Footer: React.FC = () => {
             <button onClick={() => scrollTo('#doctors')} className="text-xs text-left text-slate-400 hover:text-white transition-colors cursor-pointer">Doctors</button>
             <button onClick={() => scrollTo('#about')} className="text-xs text-left text-slate-400 hover:text-white transition-colors cursor-pointer">About Hospital</button>
             <button onClick={() => scrollTo('#services')} className="text-xs text-left text-slate-400 hover:text-white transition-colors cursor-pointer">Outpatient Services</button>
-            <button onClick={() => scrollTo('#tests')} className="text-xs text-left text-slate-400 hover:text-white transition-colors cursor-pointer">Tests &amp; Surgery</button>
+            <button onClick={() => scrollTo('#tests')} className="text-xs text-left text-slate-400 hover:text-white transition-colors cursor-pointer">Surgery</button>
             <button onClick={() => scrollTo('#gallery')} className="text-xs text-left text-slate-400 hover:text-white transition-colors cursor-pointer">Facility Gallery</button>
           </div>
 
@@ -66,9 +66,24 @@ export const Footer: React.FC = () => {
             <span className="font-heading font-semibold text-xs text-white uppercase tracking-wider mb-2">
               Contact
             </span>
-            <span className="text-xs text-slate-300">Palasa: 08945-242442</span>
-            <span className="text-xs text-slate-300">Sompeta: 08947-234108 </span>
-            <span className="text-xs text-slate-300">Ichapuram: 08947-231261</span>
+            <a
+              href="tel:+918945242442"
+              className="text-xs text-slate-300 hover:text-white hover:underline transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-sm w-fit"
+            >
+              Palasa: 08945-242442
+            </a>
+            <a
+              href="tel:+918947234108"
+              className="text-xs text-slate-300 hover:text-white hover:underline transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-sm w-fit"
+            >
+              Sompeta: 08947-234108
+            </a>
+            <a
+              href="tel:+918947231261"
+              className="text-xs text-slate-300 hover:text-white hover:underline transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-rose-400 rounded-sm w-fit"
+            >
+              Ichapuram: 08947-231261
+            </a>
           </div>
 
         </div>

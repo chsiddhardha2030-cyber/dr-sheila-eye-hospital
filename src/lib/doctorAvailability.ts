@@ -114,6 +114,146 @@ export const time24ToString = (
 }
 
 /**
+ * Helper to parse 12-hour or 24-hour time string to total minutes from midnight (0-1439).
+ */
+export const parseTimeToMinutes = (timeStr: string | null | undefined): number | null => {
+  if (!timeStr) return null
+  const trimmed = timeStr.trim()
+  if (!trimmed) return null
+
+  const match12 = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i)
+  if (match12) {
+    let hours = parseInt(match12[1], 10)
+    const minutes = parseInt(match12[2], 10)
+    const meridiem = match12[3].toUpperCase()
+    if (meridiem === 'PM' && hours < 12) hours += 12
+    if (meridiem === 'AM' && hours === 12) hours = 0
+    return hours * 60 + minutes
+  }
+
+  const match24 = trimmed.match(/^(\d{1,2}):(\d{2})/)
+  if (match24) {
+    const hours = parseInt(match24[1], 10)
+    const minutes = parseInt(match24[2], 10)
+    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+      return hours * 60 + minutes
+    }
+  }
+
+  return null
+}
+
+/**
+ * Converts minutes from midnight (0-1439) to 24-hour "HH:mm" string.
+ */
+export const minutesToTime24 = (mins: number): string => {
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+}
+
+/**
+ * Formats any time string or 24h string into clean 12-hour format with AM/PM.
+ */
+export const formatTimeTo12Hour = (timeStr: string | null | undefined, fallback: string = ''): string => {
+  if (!timeStr) return fallback
+  return time24ToString(timeStr, fallback)
+}
+
+export interface BranchTimeBounds {
+  openingMins: number
+  closingMins: number
+  formattedOpen: string
+  formattedClose: string
+}
+
+/**
+ * Dynamically resolves opening and closing time bounds.
+ * - When a specific branch is selected: uses that branch's configured opening and closing times.
+ * - When no branch is selected: uses the earliest opening time and the latest closing time across all branches.
+ */
+export const getBranchTimeBounds = (
+  branch: Branch | null | undefined,
+  allBranches: Branch[]
+): BranchTimeBounds => {
+  if (branch) {
+    const openingMins = parseTimeToMinutes(branch.opening_time) ?? 540 // Default 09:00 AM
+    const closingMins = parseTimeToMinutes(branch.closing_time) ?? 1020 // Default 05:00 PM
+    return {
+      openingMins,
+      closingMins,
+      formattedOpen: time24ToString(minutesToTime24(openingMins), '09:00 AM'),
+      formattedClose: time24ToString(minutesToTime24(closingMins), '05:00 PM'),
+    }
+  }
+
+  // When no branch is selected:
+  // Consider open branches if any are open, otherwise all branches in DB
+  const candidateBranches =
+    allBranches && allBranches.length > 0
+      ? allBranches.filter((b) => b.is_open).length > 0
+        ? allBranches.filter((b) => b.is_open)
+        : allBranches
+      : []
+
+  if (candidateBranches.length > 0) {
+    const openings = candidateBranches.map((b) => parseTimeToMinutes(b.opening_time) ?? 540)
+    const closings = candidateBranches.map((b) => parseTimeToMinutes(b.closing_time) ?? 1020)
+    const minOpen = Math.min(...openings)
+    const maxClose = Math.max(...closings)
+
+    return {
+      openingMins: minOpen,
+      closingMins: maxClose,
+      formattedOpen: time24ToString(minutesToTime24(minOpen), '09:00 AM'),
+      formattedClose: time24ToString(minutesToTime24(maxClose), '10:00 PM'),
+    }
+  }
+
+  return {
+    openingMins: 540,
+    closingMins: 1320, // 10:00 PM
+    formattedOpen: '09:00 AM',
+    formattedClose: '10:00 PM',
+  }
+}
+
+export interface TimeSlotOption {
+  value: string
+  label: string
+  isPast: boolean
+}
+
+/**
+ * Generates 30-minute interval time slots in 12-hour AM/PM format
+ * between the given opening and closing bounds.
+ * Past slots for today are flagged with `isPast: true`.
+ */
+export const generateAvailableTimeSlots = (
+  bounds: BranchTimeBounds,
+  date: string,
+  todayString: string,
+  currentMinutes?: number
+): TimeSlotOption[] => {
+  const slots: TimeSlotOption[] = []
+  const isToday = date === todayString
+  const now = new Date()
+  const nowMins = currentMinutes !== undefined ? currentMinutes : now.getHours() * 60 + now.getMinutes()
+
+  for (let m = bounds.openingMins; m <= bounds.closingMins; m += 30) {
+    const time12 = time24ToString(minutesToTime24(m))
+    const isPast = isToday && m < nowMins
+    slots.push({
+      value: time12,
+      label: isPast ? `${time12} (Passed)` : time12,
+      isPast,
+    })
+  }
+
+  return slots
+}
+
+/**
  * Validates whether a time string is a valid 12-hour or 24-hour time representation.
  */
 export const isValidTimeString = (timeStr: string | null | undefined): boolean => {
