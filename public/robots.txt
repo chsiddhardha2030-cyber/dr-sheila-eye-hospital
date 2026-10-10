@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://drsheilaseyehospitals.com/sitemap.xml
+Sitemap: https://www.drsheilaseyehospitals.com/sitemap.xml
