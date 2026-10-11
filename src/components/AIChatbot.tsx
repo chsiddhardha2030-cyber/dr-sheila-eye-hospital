@@ -14,7 +14,7 @@ export const AIChatbot: React.FC = () => {
     {
       id: 'welcome',
       sender: 'bot',
-      text: 'Hello. I can assist with information regarding Dr. Sheila Eye Hospitals branches, consulting surgeons, services, and appointment inquiries.',
+      text: 'Hello. I can assist with information regarding Dr Sheilas Eye Hospitals branches, consulting surgeons, services, and appointment inquiries.',
     },
   ])
   const [inputValue, setInputValue] = useState('')
@@ -28,7 +28,7 @@ export const AIChatbot: React.FC = () => {
     const q = input.toLowerCase()
 
     if (q.includes('doctor') || q.includes('surgeon') || q.includes('sheila') || q.includes('tridib')) {
-      return 'Dr. Sheila Eye Hospitals is led by our ophthalmic surgeons:\n• Dr. Sheila Thangaraj (MBBS, DO) — Ophthalmic Surgeon & CEO\n• Dr. Tridib Gogoi (MBBS, DO) — Ophthalmic Surgeon & Medical Director'
+      return 'Dr Sheilas Eye Hospitals is led by our ophthalmic surgeons:\n• Dr. Sheila Thangaraj (MBBS, DO) — Ophthalmic Surgeon & CEO\n• Dr. Tridib Gogoi (MBBS, DO) — Ophthalmic Surgeon & Medical Director'
     }
 
     if (q.includes('branch') || q.includes('clinic') || q.includes('location') || q.includes('where') || q.includes('address')) {
@@ -99,7 +99,7 @@ export const AIChatbot: React.FC = () => {
             <div className="px-5 py-4 bg-[#FAF8F5] border-b border-[#E8E2D8] flex items-center justify-between">
               <div>
                 <h4 className="font-heading font-bold text-sm text-[#1C242E]">Hospital Assistant</h4>
-                <span className="text-[10px] text-[#BE185D] font-heading font-semibold uppercase tracking-wider">Dr. Sheila Eye Hospitals</span>
+                <span className="text-[10px] text-[#BE185D] font-heading font-semibold uppercase tracking-wider">Dr Sheilas Eye Hospitals</span>
               </div>
               <button
                 onClick={() => setIsOpen(false)}

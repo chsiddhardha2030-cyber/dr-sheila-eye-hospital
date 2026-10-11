@@ -157,15 +157,27 @@ export const Hero: React.FC = () => {
             </div>
           </motion.div>
 
+          {/* Hospital Brand Eyebrow Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
+            className="mb-4 inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#BE185D]/10 border border-[#BE185D]/20 text-[#BE185D] text-xs sm:text-[13px] font-heading font-semibold tracking-wide uppercase"
+          >
+            <span>Dr Sheilas Eye Hospitals</span>
+            <span className="text-[#BE185D]/40">&bull;</span>
+            <span className="text-[#5A687A] font-medium capitalize">Srikakulam District</span>
+          </motion.div>
+
           {/* Large Confident Display Headline (Manrope) */}
           <motion.h1
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-            className="font-heading font-extrabold text-5xl sm:text-7xl lg:text-8xl text-[#1C242E] tracking-[-0.035em] leading-[1.02] mb-7"
+            className="font-heading font-extrabold text-4xl sm:text-6xl lg:text-7xl text-[#1C242E] tracking-[-0.035em] leading-[1.06] mb-6"
           >
             Expert Surgical Eye Care.<br />
-            <span className="text-stone-700">Clearer Vision.</span>
+            <span className="text-stone-700">Clearer Vision for Life.</span>
           </motion.h1>
 
           {/* Clean Editorial Supporting Copy */}
@@ -173,7 +185,7 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-            className="text-[#5A687A] text-lg sm:text-xl font-normal leading-relaxed max-w-lg mb-9"
+            className="text-[#5A687A] text-base sm:text-lg font-normal leading-relaxed max-w-xl mb-9"
           >
             Advanced eye care with surgical expertise.
           </motion.p>

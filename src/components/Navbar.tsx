@@ -26,10 +26,24 @@ export const Navbar: React.FC = () => {
 
   const handleLinkClick = (href: string) => {
     setIsOpen(false)
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', `/${href}`)
+      window.dispatchEvent(new PopStateEvent('popstate'))
+      return
+    }
     const element = document.querySelector(href)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
+  }
+
+  const handleLogoClick = () => {
+    setIsOpen(false)
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', '/')
+      window.dispatchEvent(new PopStateEvent('popstate'))
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -44,10 +58,10 @@ export const Navbar: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
           {/* Minimal Wordmark */}
           <a
-            href="#hero"
+            href="/"
             onClick={(e) => {
               e.preventDefault()
-              handleLinkClick('#hero')
+              handleLogoClick()
             }}
             className="flex items-baseline gap-2 group cursor-pointer"
           >

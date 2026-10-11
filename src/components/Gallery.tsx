@@ -448,7 +448,7 @@ export const Gallery: React.FC = () => {
                   {/* Photo */}
                   <img
                     src={item.src}
-                    alt={item.branch}
+                    alt={`${item.branch} - ${item.title}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
                   />
@@ -555,7 +555,7 @@ export const Gallery: React.FC = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.25 }}
                   src={currentImages[lightboxIdx].src}
-                  alt={currentImages[lightboxIdx].branch}
+                  alt={`${currentImages[lightboxIdx].branch} - ${currentImages[lightboxIdx].title}`}
                   className="max-w-[92vw] sm:max-w-4xl max-h-[75vh] object-contain rounded-2xl border border-white/15 shadow-2xl"
                 />
 

@@ -242,6 +242,7 @@ export const Clinics: React.FC = () => {
                   <span>Call Now</span>
                 </a>
 
+
                 <button
                   onClick={() => handleDirectionsClick(current)}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-full bg-stone-100 hover:bg-stone-200 text-[#1C242E] border border-[#E8E2D8] font-heading font-medium text-xs uppercase tracking-wider transition-all cursor-pointer group shadow-xs"

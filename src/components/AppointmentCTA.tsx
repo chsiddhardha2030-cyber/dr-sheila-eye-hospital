@@ -457,7 +457,7 @@ export const AppointmentCTA: React.FC = () => {
 
     // 9. Construct formatted WhatsApp message
     const messageLines = [
-      'Hello Dr. Sheilas Eye Hospital, I would like to request an appointment.',
+      'Hello Dr Sheilas Eye Hospitals, I would like to request an appointment.',
       '',
       `Branch: ${formData.branch} Hospital`,
       `Doctor / Consultation: ${doctorConsultationLine}`,

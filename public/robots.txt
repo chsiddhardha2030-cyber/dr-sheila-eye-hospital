@@ -2,4 +2,15 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /*.png$
+Allow: /*.ico$
+Allow: /*.webp$
+Allow: /*.jpeg$
+Allow: /*.jpg$
+
 Sitemap: https://www.drsheilaseyehospitals.com/sitemap.xml

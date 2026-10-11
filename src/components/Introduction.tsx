@@ -64,37 +64,37 @@ const pillars = [
 const aboutSlides = [
   {
     image: '/optimized/about/DSC_8300.webp',
-    alt: 'Dr. Sheilas Eye Hospital Clinical Facility',
+    alt: 'Dr Sheilas Eye Hospitals Clinical Facility',
     caption: 'Comprehensive Eye Care & Modern Facility',
     tag: 'Clinical Excellence',
   },
   {
     image: '/optimized/about/Sheilas Eye Hospital Palasa Branch Image.webp',
-    alt: 'Dr. Sheilas Eye Hospital – Palasa Branch',
-    caption: 'Sheilas Eye Hospital · Palasa Branch',
+    alt: 'Dr Sheilas Eye Hospitals – Palasa Branch',
+    caption: 'Dr Sheilas Eye Hospitals · Palasa Branch',
     tag: 'Main Surgical Hospital',
   },
   {
     image: '/optimized/about/IMG_5837.webp',
-    alt: 'Dr. Sheilas Eye Hospital Facility',
+    alt: 'Dr Sheilas Eye Hospitals Facility',
     caption: 'Modern Clinical Facility & Patient Care',
     tag: 'Advanced Infrastructure',
   },
   {
     image: '/optimized/about/IMG_5842.webp',
-    alt: 'Dr. Sheilas Eye Hospital Diagnostic Suite',
+    alt: 'Dr Sheilas Eye Hospitals Diagnostic Suite',
     caption: 'Comprehensive Eye Examination Suite',
     tag: 'Diagnostic Care',
   },
   {
     image: '/optimized/about/IMG_5844.webp',
-    alt: 'Dr. Sheilas Eye Hospital Ophthalmic Tech',
+    alt: 'Dr Sheilas Eye Hospitals Ophthalmic Tech',
     caption: 'Sterile OT & Surgical Precision Equipment',
     tag: 'Palasa OT Complex',
   },
   {
     image: '/optimized/about/IMG_5845.webp',
-    alt: 'Dr. Sheilas Eye Hospital Consultation Area',
+    alt: 'Dr Sheilas Eye Hospitals Consultation Area',
     caption: 'Dedicated Consultation & Optical Dispensary',
     tag: 'Patient-First Environment',
   },
@@ -216,7 +216,7 @@ export const Introduction: React.FC = () => {
             className="lg:col-span-7 flex flex-col"
           >
             <span className="text-[12px] font-heading font-semibold tracking-[0.25em] uppercase text-[#BE185D] mb-4 block">
-              About Dr. Sheilas Eye Hospitals
+              About Dr Sheilas Eye Hospitals
             </span>
             <h2 className="font-heading font-bold text-3xl sm:text-4xl lg:text-5xl text-[#1C242E] tracking-[-0.03em] leading-[1.15] mb-6">
               Dedicated ophthalmic expertise rooted in genuine patient care.
