@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUpRight, Phone, MapPin, X, Info, PhoneCall, Clock } from 'lucide-react'
 import { useHospitalData } from '../context/HospitalDataContext'
+import { isBranchOpenToday } from '../lib/branchStatus'
 
 interface ClinicBranch {
   id: string
@@ -84,7 +85,7 @@ export const Clinics: React.FC = () => {
     (b) => b.name.toLowerCase() === current.town.toLowerCase()
   )
 
-  const isOpen = currentDbBranch ? currentDbBranch.is_open : true
+  const isOpen = currentDbBranch ? isBranchOpenToday(currentDbBranch) : false
   const openingTime = currentDbBranch?.opening_time || '09:00 AM'
   const closingTime = currentDbBranch?.closing_time || '08:00 PM'
   const displayPhone = currentDbBranch?.whatsapp_number || current.phone
@@ -119,7 +120,7 @@ export const Clinics: React.FC = () => {
         <div className="flex flex-wrap gap-2.5 pb-6 border-b border-[#E8E2D8] mb-10">
           {staticBranches.map((branch) => {
             const dbB = dbBranches.find((b) => b.name.toLowerCase() === branch.town.toLowerCase())
-            const bOpen = dbB ? dbB.is_open : true
+            const bOpen = dbB ? isBranchOpenToday(dbB) : false
 
             return (
               <button

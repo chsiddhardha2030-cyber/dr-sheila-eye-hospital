@@ -1,6 +1,7 @@
 import React from 'react'
 import { MapPin } from 'lucide-react'
 import { useHospitalData } from '../context/HospitalDataContext'
+import { isBranchOpenToday } from '../lib/branchStatus'
 
 export const BranchStatusBar: React.FC = () => {
   const { branches, loading } = useHospitalData()
@@ -21,7 +22,7 @@ export const BranchStatusBar: React.FC = () => {
             <span className="text-xs text-[#5A687A]">Loading branches...</span>
           ) : (
             branches.map((branch) => {
-              const isOpen = branch.is_open
+              const isOpen = isBranchOpenToday(branch)
               const openTime = branch.opening_time || '9:00 AM'
               const closeTime = branch.closing_time || '10:00 PM'
 

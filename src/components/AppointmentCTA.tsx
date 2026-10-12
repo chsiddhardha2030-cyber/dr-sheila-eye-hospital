@@ -25,6 +25,7 @@ import {
   getBranchTimeBounds,
   generateAvailableTimeSlots,
 } from '../lib/doctorAvailability'
+import { isBranchOpenToday } from '../lib/branchStatus'
 
 const formatDateClean = (dateStr: string): string => {
   if (!dateStr) return ''
@@ -178,7 +179,7 @@ export const AppointmentCTA: React.FC = () => {
       const bObj = branches.find(
         (b) => b.name.trim().toLowerCase() === bName.trim().toLowerCase()
       )
-      const isOpen = bObj ? bObj.is_open : true
+      const isOpen = bObj ? isBranchOpenToday(bObj, formData.date || undefined) : false
       const defaultClose = bName.toLowerCase() === 'palasa' ? '10:00 PM' : '05:00 PM'
       const openTime = bObj?.opening_time
         ? formatTimeTo12Hour(bObj.opening_time, '09:00 AM')
@@ -207,7 +208,7 @@ export const AppointmentCTA: React.FC = () => {
       ]
     }
     return list
-  }, [branches, formData.branch])
+  }, [branches, formData.branch, formData.date])
 
   // If a time was selected but falls outside the current time bounds after branch/date change, clear it
   useEffect(() => {

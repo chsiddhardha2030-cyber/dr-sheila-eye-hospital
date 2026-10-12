@@ -1,4 +1,5 @@
 import type { Doctor, Branch, DoctorSchedule } from './database.types'
+import { isBranchOpenToday, getKolkataDateParts } from './branchStatus'
 
 export const DAYS_OF_WEEK = [
   'Monday',
@@ -191,8 +192,8 @@ export const getBranchTimeBounds = (
   // Consider open branches if any are open, otherwise all branches in DB
   const candidateBranches =
     allBranches && allBranches.length > 0
-      ? allBranches.filter((b) => b.is_open).length > 0
-        ? allBranches.filter((b) => b.is_open)
+      ? allBranches.filter((b) => isBranchOpenToday(b)).length > 0
+        ? allBranches.filter((b) => isBranchOpenToday(b))
         : allBranches
       : []
 
@@ -293,29 +294,25 @@ export const getDayOfWeek = (dateInput?: string | Date | null): DayOfWeek => {
   ]
 
   if (!dateInput) {
-    const d = new Date()
-    return dayNames[d.getDay()]
+    return getKolkataDateParts().weekday
   }
 
   if (typeof dateInput === 'string') {
-    const parts = dateInput.trim().split('-')
-    if (parts.length === 3) {
+    const trimmed = dateInput.trim()
+    const parts = trimmed.split('-')
+    if (parts.length === 3 && parts[0].length === 4) {
       const year = parseInt(parts[0], 10)
       const month = parseInt(parts[1], 10) - 1
       const day = parseInt(parts[2], 10)
-      const d = new Date(year, month, day)
+      const d = new Date(year, month, day, 12, 0, 0)
       if (!isNaN(d.getTime())) {
         return dayNames[d.getDay()]
       }
     }
+    return getKolkataDateParts(trimmed).weekday
   }
 
-  const d = new Date(dateInput)
-  if (!isNaN(d.getTime())) {
-    return dayNames[d.getDay()]
-  }
-
-  return dayNames[new Date().getDay()]
+  return getKolkataDateParts(dateInput).weekday
 }
 
 /**
@@ -431,7 +428,7 @@ export const isDoctorAvailableOnDate = (
     const branchObj = branches.find(
       (b) => b.name.trim().toLowerCase() === branchName.trim().toLowerCase()
     )
-    if (branchObj && !branchObj.is_open) {
+    if (branchObj && !isBranchOpenToday(branchObj, date)) {
       return false
     }
   }
@@ -541,7 +538,7 @@ export const getDoctorAvailableBranches = (
     branches.find((b) => b.name.trim().toLowerCase() === assignedBranch.toLowerCase()) || null
 
   // If branch is closed, doctor cannot be booked at that branch
-  if (branchInfo && !branchInfo.is_open) {
+  if (branchInfo && !isBranchOpenToday(branchInfo, date)) {
     return []
   }
 

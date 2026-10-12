@@ -8,6 +8,7 @@ import {
   getDoctorBranchSchedule,
   getDayOfWeek,
 } from '../lib/doctorAvailability'
+import { isBranchOpenToday } from '../lib/branchStatus'
 
 export const Doctors: React.FC = () => {
   const { doctors: dbDoctors, branches, schedules } = useHospitalData()
@@ -70,7 +71,7 @@ export const Doctors: React.FC = () => {
             const branchObj = branches.find(
               (b) => b.name.toLowerCase() === todayStation.toLowerCase()
             )
-            const isBranchOpen = branchObj ? branchObj.is_open : true
+            const isBranchOpen = branchObj ? isBranchOpenToday(branchObj) : false
             const scheduleInfo =
               dbDoc && !isOffToday
                 ? getDoctorBranchSchedule(dbDoc.id, todayStation, dbDoc, schedules, branches)

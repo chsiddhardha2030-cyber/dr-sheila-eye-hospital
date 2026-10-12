@@ -5,8 +5,11 @@ import {
   getDayOfWeek,
   DAYS_OF_WEEK,
 } from '../lib/doctorAvailability'
+import {
+  getKolkataDateParts,
+  isBranchOpenToday as checkBranchOpenToday,
+} from '../lib/branchStatus'
 import type {
-
   Doctor,
   Branch,
   DoctorSchedule,
@@ -22,6 +25,9 @@ interface HospitalDataContextType {
   schedules: DoctorSchedule[]
   loading: boolean
   error: string | null
+  isSunday: boolean
+  kolkataDateString: string
+  isBranchOpenToday: (branch: Branch | null | undefined) => boolean
   refreshData: () => Promise<void>
   updateDoctor: (id: number, updates: DoctorUpdate) => Promise<{ success: boolean; error?: string }>
   updateBranch: (id: number, updates: BranchUpdate) => Promise<{ success: boolean; error?: string }>
@@ -50,6 +56,32 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [schedules, setSchedules] = useState<DoctorSchedule[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [kolkataParts, setKolkataParts] = useState(() => getKolkataDateParts())
+
+  // Periodically check for date transition in Asia/Kolkata (e.g. at midnight)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const nowParts = getKolkataDateParts()
+      setKolkataParts((prev) => {
+        if (prev.dateString !== nowParts.dateString || prev.weekday !== nowParts.weekday) {
+          return nowParts
+        }
+        return prev
+      })
+    }, 10000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const isSunday = kolkataParts.weekday === 'Sunday'
+
+  const isBranchOpenToday = useCallback(
+    (branch: Branch | null | undefined): boolean => {
+      return checkBranchOpenToday(branch)
+    },
+    // re-create when Sunday status changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isSunday]
+  )
 
   const fetchData = useCallback(async () => {
     try {
@@ -513,6 +545,9 @@ export const HospitalDataProvider: React.FC<{ children: React.ReactNode }> = ({ 
         schedules,
         loading,
         error,
+        isSunday,
+        kolkataDateString: kolkataParts.dateString,
+        isBranchOpenToday,
         refreshData: fetchData,
         updateDoctor,
         updateBranch,

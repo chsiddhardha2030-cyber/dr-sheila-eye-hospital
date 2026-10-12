@@ -14,6 +14,7 @@ import {
   Calendar,
   Clock,
   Sparkles,
+  Info,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useHospitalData } from '../context/HospitalDataContext'
@@ -964,6 +965,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onGoToPublic }) 
                 Configure operating status, OPD timings, and official WhatsApp reception contact
                 numbers for Palasa, Sompeta, and Ichapuram.
               </p>
+            </div>
+
+            <div className="flex items-start gap-2.5 px-4 py-3 rounded-2xl bg-[#FDF2F4] border border-[#FCE7F3] text-xs text-[#BE185D]">
+              <Info size={16} className="shrink-0 mt-0.5 text-[#BE185D]" />
+              <span>
+                <strong>Automatic Sunday Closure is active:</strong> All branches automatically display as &ldquo;Closed today&rdquo; on the public website every Sunday (12:00 AM – 11:59 PM IST) without requiring manual admin updates. Normal operating hours restore automatically on Mondays.
+              </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

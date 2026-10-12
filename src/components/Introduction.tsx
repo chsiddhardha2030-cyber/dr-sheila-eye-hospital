@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -88,52 +88,22 @@ const aboutSlides = [
   },
   {
     image: '/optimized/about/IMG_5844.webp',
-    alt: 'Dr Sheilas Eye Hospitals Ophthalmic Tech',
-    caption: 'Sterile OT & Surgical Precision Equipment',
-    tag: 'Palasa OT Complex',
+    alt: 'Dr Sheilas Eye Hospitals Comfortable Patient Waiting Area',
+    caption: 'Comfortable Patient Waiting Area',
+    tag: 'Patient Waiting Area',
   },
   {
     image: '/optimized/about/IMG_5845.webp',
-    alt: 'Dr Sheilas Eye Hospitals Consultation Area',
-    caption: 'Dedicated Consultation & Optical Dispensary',
-    tag: 'Patient-First Environment',
+    alt: 'Dr Sheilas Eye Hospitals Modern Eye Care Equipment',
+    caption: 'Modern Eye Care Equipment',
+    tag: 'Modern Eye Care Equipment',
   },
 ]
 
 export const Introduction: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
   const [slideDirection, setSlideDirection] = useState(1)
-  const [isInView, setIsInView] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
-
-  /* ── Viewport Visibility Observer for Independent Slideshow ─────────────── */
-  useEffect(() => {
-    const el = sectionRef.current
-    if (!el) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInView(entry.isIntersecting)
-      },
-      { threshold: 0.2 }
-    )
-
-    observer.observe(el)
-    return () => {
-      if (el) observer.unobserve(el)
-    }
-  }, [])
-
-  /* ── Auto-advance slideshow only when section is visible ────────────────── */
-  useEffect(() => {
-    if (!isInView || isPaused) return
-    const timer = setInterval(() => {
-      setSlideDirection(1)
-      setCurrentSlide((prev) => (prev + 1) % aboutSlides.length)
-    }, 3500) // Display each image for 3.5s (> 2 seconds requirement)
-    return () => clearInterval(timer)
-  }, [isInView, isPaused])
 
   const nextSlide = () => {
     setSlideDirection(1)
@@ -236,8 +206,6 @@ export const Introduction: React.FC = () => {
           >
             <div
               className="relative rounded-2xl overflow-hidden border border-[#E8E2D8] shadow-[0_8px_30px_rgba(28,36,46,0.06)] aspect-[3/4] bg-stone-100 group select-none"
-              onMouseEnter={() => setIsPaused(true)}
-              onMouseLeave={() => setIsPaused(false)}
               onTouchStart={handleSlideTouchStart}
               onTouchMove={handleSlideTouchMove}
               onTouchEnd={handleSlideTouchEnd}
@@ -281,14 +249,14 @@ export const Introduction: React.FC = () => {
                 <button
                   onClick={prevSlide}
                   aria-label="Previous Slide"
-                  className="pointer-events-auto w-9 h-9 rounded-full bg-white/80 hover:bg-white text-[#1C242E] backdrop-blur-md border border-white/60 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                  className="pointer-events-auto w-9 h-9 rounded-full bg-white/90 hover:bg-white text-[#1C242E] backdrop-blur-md border border-white/80 flex items-center justify-center shadow-md opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={nextSlide}
                   aria-label="Next Slide"
-                  className="pointer-events-auto w-9 h-9 rounded-full bg-white/80 hover:bg-white text-[#1C242E] backdrop-blur-md border border-white/60 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+                  className="pointer-events-auto w-9 h-9 rounded-full bg-white/90 hover:bg-white text-[#1C242E] backdrop-blur-md border border-white/80 flex items-center justify-center shadow-md opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <ChevronRight size={18} />
                 </button>

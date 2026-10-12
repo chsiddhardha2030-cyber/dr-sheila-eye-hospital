@@ -2,6 +2,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { useHospitalData } from '../context/HospitalDataContext'
+import { isBranchOpenToday } from '../lib/branchStatus'
 
 export const Hero: React.FC = () => {
   const { branches } = useHospitalData()
@@ -16,7 +17,7 @@ export const Hero: React.FC = () => {
     const dbBranch = branches.find(
       (b) => b.name.toLowerCase() === def.name.toLowerCase()
     )
-    const isOpen = dbBranch ? dbBranch.is_open : true
+    const isOpen = dbBranch ? isBranchOpenToday(dbBranch) : false
     const timing =
       dbBranch && dbBranch.opening_time && dbBranch.closing_time
         ? `${dbBranch.opening_time} – ${dbBranch.closing_time}`
@@ -45,13 +46,13 @@ export const Hero: React.FC = () => {
       {/* Desktop: 16:9 video (hidden on mobile) */}
       <video
         className="absolute inset-0 w-full h-full object-cover hidden md:block"
-        src="/Images/16-9-eye-exploded-2.mp4"
+        src="/Images/Untitled - 11 October 2026 at 16.11.17.mp4"
         autoPlay
         muted 
         loop
         playsInline
         aria-hidden="true"
-        style={{ zIndex: 0 }}
+        style={{ zIndex: 0, filter: 'brightness(0.88) contrast(1.04)' }}
       />
 
       {/* Mobile: 9:16 video (hidden on desktop) */}
