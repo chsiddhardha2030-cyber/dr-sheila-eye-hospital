@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowUpRight, Phone, MapPin, X, Info, PhoneCall, Clock } from 'lucide-react'
+import { ArrowUpRight, Phone, MapPin, PhoneCall, Clock } from 'lucide-react'
 import { useHospitalData } from '../context/HospitalDataContext'
 import { isBranchOpenToday } from '../lib/branchStatus'
 
@@ -21,7 +21,6 @@ interface ClinicBranch {
 
 export const Clinics: React.FC = () => {
   const [activeBranch, setActiveBranch] = useState<string>('palasa')
-  const [showIchapuramModal, setShowIchapuramModal] = useState<boolean>(false)
   const { branches: dbBranches } = useHospitalData()
 
   const staticBranches: ClinicBranch[] = [
@@ -73,6 +72,7 @@ export const Clinics: React.FC = () => {
       ],
       phone: '08947-231261',
       phoneHref: 'tel:08947231261',
+      mapUrl: 'https://maps.app.goo.gl/GhrKz9Vp3JYN3qEJ9',
       surgical: false,
       image: '/optimized/clinics/ichapuram/Ichapuram-branch-collab.png',
     },
@@ -92,9 +92,7 @@ export const Clinics: React.FC = () => {
   const displayPhoneHref = `tel:${displayPhone.replace(/\D/g, '')}`
 
   const handleDirectionsClick = (branch: ClinicBranch) => {
-    if (branch.id === 'ichapuram' || !branch.mapUrl) {
-      setShowIchapuramModal(true)
-    } else {
+    if (branch.mapUrl) {
       window.open(branch.mapUrl, '_blank', 'noopener,noreferrer')
     }
   }
@@ -276,75 +274,6 @@ export const Clinics: React.FC = () => {
         </AnimatePresence>
 
       </div>
-
-      {/* Ichapuram Directions Notice Modal */}
-      <AnimatePresence>
-        {showIchapuramModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-6"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              className="p-7 sm:p-8 rounded-3xl bg-white border border-[#E8E2D8] max-w-md w-full relative shadow-2xl text-[#1C242E]"
-            >
-              <button
-                onClick={() => setShowIchapuramModal(false)}
-                className="absolute top-5 right-5 p-2 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-stone-900 transition-colors cursor-pointer"
-                aria-label="Close Notice"
-              >
-                <X size={16} />
-              </button>
-
-              <div className="flex flex-col items-center text-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#FDF2F4] border border-[#FCE7F3] flex items-center justify-center text-[#BE185D]">
-                  <Info size={22} />
-                </div>
-
-                <div>
-                  <h3 className="font-heading font-bold text-xl text-[#1C242E] mb-1.5">
-                    Ichapuram Branch Directions
-                  </h3>
-                  <p className="text-[#BE185D] text-xs font-heading font-semibold uppercase tracking-wider">
-                    Dasannapeta Junction &bull; Ichapuram
-                  </p>
-                </div>
-
-                <p className="text-sm text-[#5A687A] leading-relaxed">
-                  Google Maps location is not available for this branch yet. Please contact the hospital for directions.
-                </p>
-
-                <div className="w-full p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D8] flex items-center justify-between mt-1">
-                  <span className="text-xs text-[#5A687A] font-medium">Emergency / Reception:</span>
-                  <span className="font-heading font-semibold text-[#1C242E] text-sm">
-                    {displayPhone}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3 w-full mt-2">
-                  <a
-                    href={displayPhoneHref}
-                    className="flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-[#BE185D] hover:bg-[#9F1239] text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors shadow-sm"
-                  >
-                    <PhoneCall size={14} />
-                    <span>Call Now</span>
-                  </a>
-                  <button
-                    onClick={() => setShowIchapuramModal(false)}
-                    className="px-5 py-3 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-heading font-medium text-xs uppercase tracking-wider transition-colors cursor-pointer"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   )
 }
